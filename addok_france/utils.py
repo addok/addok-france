@@ -13,6 +13,7 @@ TYPES = [
 TYPES_REGEX = '|'.join(
     map(lambda x: '[{}{}]{}'.format(x[0], x[0].upper(), x[1:]), TYPES)
 )
+ORDINAL_REGEX = 'bis|ter|quater|quinquies|sexies|[a-z]'
 
 
 def clean_query(q):
@@ -31,14 +32,13 @@ def extract_address(q):
     m = extract_address_pattern.search(q)
     return m.group() if m else q
 extract_address_pattern = re.compile(
-    '(\d+( *(bis|ter))?,? +(' + TYPES_REGEX + ') .*(\d{5})?).*',
+    r'(\b\d{1,4}( *(' + ORDINAL_REGEX + '))?,? +(' + TYPES_REGEX + ') .*(\d{5})?).*',  # noqa
     flags=re.IGNORECASE)
 
 
 def glue_ordinal(q):
     """Glue '3' and 'bis'."""
     return glue_ordinal_pattern.sub('\g<1>\g<2>\g<3>', q)
-ORDINAL_REGEX = 'bis|ter|quater|quinquies|sexies|[a-z]'
 glue_ordinal_pattern = re.compile('(\d{1,4}) (' + ORDINAL_REGEX + ')\\b($|(?:,? (' + TYPES_REGEX + ')))',  # noqa
                                   flags=re.IGNORECASE)
 

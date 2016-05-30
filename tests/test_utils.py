@@ -80,12 +80,14 @@ def test_clean_query(input, expected):
     # Two spaces after housenumber.
     ("resid goelands 28  impasse des petrels 76460 Saint-valery-en-caux",
      "28  impasse des petrels 76460 Saint-valery-en-caux"),
-    # Two spaces after bis.
+    # Two spaces before bis.
     ("resid goelands 28  bis impasse des petrels 76460 Saint-valery-en-caux",
      "28  bis impasse des petrels 76460 Saint-valery-en-caux"),
-    # No spaces after bis.
+    # No spaces before bis.
     ("resid goelands 28bis impasse des petrels 76460 Saint-valery-en-caux",
      "28bis impasse des petrels 76460 Saint-valery-en-caux"),
+    ("boulevard jean larrieu 44000 mont de marsan",
+     "boulevard jean larrieu 44000 mont de marsan"),
     ("Non matching pattern",
      "Non matching pattern"),
 ])
