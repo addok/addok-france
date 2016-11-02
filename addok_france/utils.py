@@ -61,6 +61,11 @@ def fold_ordinal(s):
 _CACHE = {}
 
 
+def remove_leading_zeros(s):
+    """0003 => 3."""
+    return re.sub("0*(\d+)", "\g<1>", s, flags=re.IGNORECASE)
+
+
 def make_labels(helper, result):
     if not result.labels:
         housenumber = getattr(result, 'housenumber', None)

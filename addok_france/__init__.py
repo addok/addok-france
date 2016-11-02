@@ -15,3 +15,4 @@ extract_address = yielder(utils.extract_address)
 fold_ordinal = yielder(utils.fold_ordinal)
 glue_ordinal = yielder(utils.glue_ordinal)
 make_labels = utils.make_labels
+remove_leading_zeros = yielder(utils.remove_leading_zeros)

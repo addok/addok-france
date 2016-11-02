@@ -1,13 +1,15 @@
 def pytest_configure():
-    from addok import config
-    config.PLUGINS.append('addok_france')
+    from addok.config import config
     config.QUERY_PROCESSORS = [
         "addok_france.extract_address",
         "addok_france.clean_query",
-        "addok_france.fold_ordinal",
+        "addok_france.remove_leading_zeros",
         "addok_france.glue_ordinal",
+        "addok_france.fold_ordinal",
     ]
     config.HOUSENUMBER_PROCESSORS = [
+        "addok_france.remove_leading_zeros",
+        "addok_france.glue_ordinal",
         "addok_france.fold_ordinal",
     ]
     config.SEARCH_RESULT_PROCESSORS = [

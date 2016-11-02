@@ -1,7 +1,7 @@
 import pytest
 
 from addok_france.utils import (clean_query, extract_address, fold_ordinal,
-                                glue_ordinal)
+                                glue_ordinal, remove_leading_zeros)
 from addok.helpers.index import index_document
 from addok.config import DB  # Do not do that in production code.
 
@@ -136,6 +136,15 @@ def test_glue_ordinal(input, expected):
 ])
 def test_fold_ordinal(input, expected):
     assert fold_ordinal(input) == expected
+
+
+@pytest.mark.parametrize("input,expected", [
+    ('03', '3'),
+    ('00009', '9'),
+    ('0', '0'),
+])
+def test_remove_leading_zeros(input, expected):
+    assert remove_leading_zeros(input) == expected
 
 
 def test_index_housenumber_uses_housenumber_preprocessors(config):
