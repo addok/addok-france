@@ -24,6 +24,7 @@ def clean_query(q):
     q = re.sub(' {2,}', ' ', q, flags=re.IGNORECASE)
     q = re.sub('[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
     q = re.sub('[ -]s/s[ -]', ' sous ', q, flags=re.IGNORECASE)
+    q = re.sub('^lieux?[ -]?dits?\\b(?=.)', '', q, flags=re.IGNORECASE)
     q = q.strip()
     return q
 
