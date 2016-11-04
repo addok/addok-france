@@ -3,7 +3,7 @@ import pytest
 from addok_france.utils import (clean_query, extract_address, fold_ordinal,
                                 glue_ordinal, remove_leading_zeros)
 from addok.helpers.index import index_document
-from addok.config import DB  # Do not do that in production code.
+from addok.db import DB
 
 
 @pytest.mark.parametrize("input,expected", [
