@@ -61,7 +61,8 @@ def glue_ordinal(tokens):
     for _, token, next_ in neighborhood(tokens):
         if token.isdigit():
             previous = token
-        elif previous is not None:
+            continue
+        if previous is not None:
             # Matches "bis" either followed by a type or nothing.
             if (ordinal_pattern.match(token) and
                     (not next_ or types_pattern.match(next_))):
@@ -69,11 +70,10 @@ def glue_ordinal(tokens):
                 # Space removed to maximize chances to get a hit.
                 token = token.update(raw.replace(' ', ''), raw=raw)
             else:
+                # False positive.
                 yield previous
             previous = None
-            yield token
-        else:
-            yield token
+        yield token
 
 ordinal_pattern = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
                              flags=re.IGNORECASE)
