@@ -14,22 +14,21 @@
         …,
         "addok_france.extract_address",
         "addok_france.clean_query",
-        "addok_france.glue_ordinal",
-        "addok_france.fold_ordinal",
     ]
 
-- Add HOUSENUMBER_PROCESSORS
+- Add PROCESSORS
 
-    HOUSENUMBER_PROCESSORS = [
-        "addok_france.glue_ordinal",
-        "addok_france.fold_ordinal",
+    PROCESSORS = [
+        …,
+        "addok_france.preprocess_housenumber",
+        "addok_france.flag_housenumber",
+        …,
     ]
 
-- Replace default make_labels `addok.helpers.results.make_labels` by France
-  dedicated one:
+- Replace default `match_housenumber` and `make_labels` by France dedicated ones:
 
     SEARCH_RESULT_PROCESSORS = [
-        …,
+        'addok_france.match_housenumber',
         'addok_france.make_labels',
         …,
     ]
