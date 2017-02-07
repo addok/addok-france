@@ -1,5 +1,7 @@
 import re
 
+from addok.helpers.text import Token
+
 TYPES = [
     'avenue', 'rue', 'boulevard', 'all[ée]es?', 'impasse', 'place',
     'chemin', 'rocade', 'route', 'l[ôo]tissement', 'mont[ée]e', 'c[ôo]te',
@@ -37,11 +39,45 @@ extract_address_pattern = re.compile(
     flags=re.IGNORECASE)
 
 
-def glue_ordinal(q):
+def neighborhood(iterable, first=None, last=None):
+    """
+    Yield the (previous, current, next) items given an iterable.
+
+    You can specify a `first` and/or `last` item for bounds.
+    """
+    iterator = iter(iterable)
+    previous = first
+    current = next(iterator)  # Throws StopIteration if empty.
+    for next_ in iterator:
+        yield (previous, current, next_)
+        previous = current
+        current = next_
+    yield (previous, current, last)
+
+
+def glue_ordinal(tokens):
     """Glue '3' and 'bis'."""
-    return glue_ordinal_pattern.sub('\g<1>\g<2>\g<3>', q)
-glue_ordinal_pattern = re.compile('(\d{1,4}) (' + ORDINAL_REGEX + ')\\b($|(?:,? (' + TYPES_REGEX + ')))',  # noqa
-                                  flags=re.IGNORECASE)
+    previous = None
+    for _, token, next_ in neighborhood(tokens):
+        if token.isdigit():
+            previous = token
+            continue
+        if previous is not None:
+            # Matches "bis" either followed by a type or nothing.
+            if (ordinal_pattern.match(token) and
+                    (not next_ or types_pattern.match(next_))):
+                raw = '{} {}'.format(previous, token)
+                # Space removed to maximize chances to get a hit.
+                token = token.update(raw.replace(' ', ''), raw=raw)
+            else:
+                # False positive.
+                yield previous
+            previous = None
+        yield token
+
+ordinal_pattern = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
+                             flags=re.IGNORECASE)
+types_pattern = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
 
 
 def fold_ordinal(s):
@@ -58,13 +94,13 @@ def fold_ordinal(s):
         for pattern, repl in rules:
             _s = re.sub(pattern, repl, _s, flags=re.IGNORECASE)
         _CACHE[s] = _s
-    return _CACHE[s]
+    return Token(_CACHE[s], raw=s.raw)
 _CACHE = {}
 
 
 def remove_leading_zeros(s):
     """0003 => 3."""
-    return re.sub("0*(\d+)", "\g<1>", s, flags=re.IGNORECASE)
+    return Token(re.sub("0*(\d+)", "\g<1>", s, flags=re.IGNORECASE), raw=s)
 
 
 def make_labels(helper, result):

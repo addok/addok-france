@@ -2,8 +2,9 @@ import pytest
 
 from addok_france.utils import (clean_query, extract_address, fold_ordinal,
                                 glue_ordinal, remove_leading_zeros)
-from addok.helpers.index import index_document
-from addok.db import DB
+from addok.helpers.text import Token
+from addok.ds import get_document
+from addok.batch import process_documents
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -96,34 +97,24 @@ def test_extract_address(input, expected):
     assert extract_address(input) == expected
 
 
-@pytest.mark.parametrize("input,expected", [
-    ('60, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '60, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('60 avenue du Centre 78180 Montigny-le-Bretonneux',
-     '60 avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('60 bis, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '60bis, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('6 ter, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '6ter, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('600 quater, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '600quater, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('600 quinquies, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '600quinquies, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('60 b, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '60b, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('60b, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '60b, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('60 s, avenue du Centre 78180 Montigny-le-Bretonneux',
-     '60s, avenue du Centre 78180 Montigny-le-Bretonneux'),
-    ('place des Terreaux Lyon',
-     'place des Terreaux Lyon'),
-    ('241 r de fayet',
-     '241 r de fayet'),
-    ('241 r rue de fayet',
-     '241r rue de fayet'),
+@pytest.mark.parametrize("inputs,expected", [
+    (['6', 'bis'], ['6bis']),
+    (['6', 'avenue'], ['6', 'avenue']),
+    (['60', 'bis', 'avenue'], ['60bis', 'avenue']),
+    (['600', 'ter', 'avenue'], ['600ter', 'avenue']),
+    (['6', 'quinquies', 'avenue'], ['6quinquies', 'avenue']),
+    (['60', 'sexies', 'avenue'], ['60sexies', 'avenue']),
+    (['600', 'quater', 'avenue'], ['600quater', 'avenue']),
+    (['6', 's', 'avenue'], ['6s', 'avenue']),
+    (['60b', 'avenue'], ['60b', 'avenue']),
+    (['600', 'b', 'avenue'], ['600b', 'avenue']),
+    (['241', 'r', 'de'], ['241', 'r', 'de']),
+    (['241', 'r', 'rue'], ['241r', 'rue']),
+    (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
 ])
-def test_glue_ordinal(input, expected):
-    assert glue_ordinal(input) == expected
+def test_glue_ordinal(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_ordinal(tokens)) == expected
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -136,7 +127,7 @@ def test_glue_ordinal(input, expected):
     ('rue du bis', 'rue du bis'),
 ])
 def test_fold_ordinal(input, expected):
-    assert fold_ordinal(input) == expected
+    assert fold_ordinal(Token(input)) == expected
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -148,7 +139,7 @@ def test_remove_leading_zeros(input, expected):
     assert remove_leading_zeros(input) == expected
 
 
-def test_index_housenumber_uses_housenumber_preprocessors(config):
+def test_index_housenumbers_use_processors(config):
     doc = {
         'id': 'xxxx',
         'type': 'street',
@@ -163,6 +154,6 @@ def test_index_housenumber_uses_housenumber_preprocessors(config):
             }
         }
     }
-    index_document(doc)
-    index = DB.hgetall('d|xxxx')
-    assert index[b'h|1b'] == b'1 bis|48.325451|2.25651'
+    process_documents(doc)
+    stored = get_document('d|xxxx')
+    assert stored['housenumbers']['1b']['raw'] == '1 bis'
