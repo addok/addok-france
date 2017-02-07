@@ -93,7 +93,7 @@ _FOLD = {
 
 def remove_leading_zeros(s):
     """0003 => 3."""
-    return Token(re.sub("0*(\d+)", "\g<1>", s, flags=re.IGNORECASE), raw=s)
+    return re.sub("0*(\d+)", "\g<1>", s, flags=re.IGNORECASE)
 
 
 def make_labels(helper, result):
