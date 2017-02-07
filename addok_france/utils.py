@@ -64,7 +64,7 @@ def glue_ordinal(tokens):
         elif previous is not None:
             # Matches "bis" either followed by a type or nothing.
             if (ordinal_pattern.match(token) and
-                    (not next_ or (next_ and types_pattern.match(next_)))):
+                    (not next_ or types_pattern.match(next_))):
                 raw = '{} {}'.format(previous, token)
                 # Space removed to maximize chances to get a hit.
                 token = token.update(raw.replace(' ', ''), raw=raw)
