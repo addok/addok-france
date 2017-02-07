@@ -55,8 +55,7 @@ def neighborhood(iterable, first=None, last=None):
     yield (previous, current, last)
 
 
-def glue_ordinal(tokens):
-    """Glue '3' and 'bis'."""
+def preprocess_housenumber(tokens):
     previous = None
     for _, token, next_ in neighborhood(tokens):
         if next_ and token.isdigit():
@@ -66,7 +65,7 @@ def glue_ordinal(tokens):
             # Matches "bis" either followed by a type or nothing.
             if (ordinal_pattern.match(token) and
                     (not next_ or types_pattern.match(next_))):
-                raw = '{} {}'.format(previous, token)
+                raw = '{} {}'.format(previous, fold_ordinal(token))
                 # Space removed to maximize chances to get a hit.
                 token = token.update(raw.replace(' ', ''), raw=raw)
             else:
@@ -82,20 +81,14 @@ types_pattern = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
 
 def fold_ordinal(s):
     """3bis => 3b."""
-    if s not in _CACHE:
-        rules = (
-            ("(\d{1,4})bis\\b", "\g<1>b"),
-            ("(\d{1,4})ter\\b", "\g<1>t"),
-            ("(\d{1,4})quater\\b", "\g<1>q"),
-            ("(\d{1,4})quinquies\\b", "\g<1>c"),
-            ("(\d{1,4})sexies\\b", "\g<1>s"),
-        )
-        _s = s
-        for pattern, repl in rules:
-            _s = re.sub(pattern, repl, _s, flags=re.IGNORECASE)
-        _CACHE[s] = _s
-    return Token(_CACHE[s], raw=s.raw)
-_CACHE = {}
+    return s.update(_FOLD.get(s.lower(), s))
+_FOLD = {
+    'bis': 'b',
+    'ter': 't',
+    'quater': 'q',
+    'quinquies': 'c',
+    'sexies': 's',
+}
 
 
 def remove_leading_zeros(s):

@@ -1,7 +1,7 @@
 import pytest
 
 from addok_france.utils import (clean_query, extract_address, fold_ordinal,
-                                glue_ordinal, remove_leading_zeros)
+                                preprocess_housenumber, remove_leading_zeros)
 from addok.helpers.text import Token
 from addok.ds import get_document
 from addok.batch import process_documents
@@ -98,34 +98,33 @@ def test_extract_address(input, expected):
 
 
 @pytest.mark.parametrize("inputs,expected", [
-    (['6', 'bis'], ['6bis']),
+    (['6', 'bis'], ['6b']),
     (['6'], ['6']),
     (['6', 'avenue'], ['6', 'avenue']),
-    (['60', 'bis', 'avenue'], ['60bis', 'avenue']),
-    (['600', 'ter', 'avenue'], ['600ter', 'avenue']),
-    (['6', 'quinquies', 'avenue'], ['6quinquies', 'avenue']),
-    (['60', 'sexies', 'avenue'], ['60sexies', 'avenue']),
-    (['600', 'quater', 'avenue'], ['600quater', 'avenue']),
+    (['60', 'bis', 'avenue'], ['60b', 'avenue']),
+    (['600', 'ter', 'avenue'], ['600t', 'avenue']),
+    (['6', 'quinquies', 'avenue'], ['6c', 'avenue']),
+    (['60', 'sexies', 'avenue'], ['60s', 'avenue']),
+    (['600', 'quater', 'avenue'], ['600q', 'avenue']),
     (['6', 's', 'avenue'], ['6s', 'avenue']),
     (['60b', 'avenue'], ['60b', 'avenue']),
     (['600', 'b', 'avenue'], ['600b', 'avenue']),
     (['241', 'r', 'de'], ['241', 'r', 'de']),
     (['241', 'r', 'rue'], ['241r', 'rue']),
     (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
+    (['rue', 'du', 'bis'], ['rue', 'du', 'bis']),
 ])
-def test_glue_ordinal(inputs, expected):
+def test_preprocess_housenumber(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
-    assert list(glue_ordinal(tokens)) == expected
+    assert list(preprocess_housenumber(tokens)) == expected
 
 
 @pytest.mark.parametrize("input,expected", [
-    ('60bis', '60b'),
-    ('60BIS', '60b'),
-    ('60ter', '60t'),
-    ('4terre', '4terre'),
-    ('60quater', '60q'),
-    ('60 bis', '60 bis'),
-    ('rue du bis', 'rue du bis'),
+    ('bis', 'b'),
+    ('BIS', 'b'),
+    ('ter', 't'),
+    ('quater', 'q'),
+    ('quinquies', 'c'),
 ])
 def test_fold_ordinal(input, expected):
     assert fold_ordinal(Token(input)) == expected

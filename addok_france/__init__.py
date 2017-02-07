@@ -12,7 +12,6 @@ else:
 
 clean_query = yielder(utils.clean_query)
 extract_address = yielder(utils.extract_address)
-fold_ordinal = yielder(utils.fold_ordinal)
-glue_ordinal = utils.glue_ordinal
+preprocess_housenumber = utils.preprocess_housenumber
 make_labels = utils.make_labels
 remove_leading_zeros = yielder(utils.remove_leading_zeros)

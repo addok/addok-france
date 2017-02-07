@@ -4,8 +4,6 @@ def pytest_configure():
         "addok_france.extract_address",
         "addok_france.clean_query",
         "addok_france.remove_leading_zeros",
-        "addok_france.glue_ordinal",
-        "addok_france.fold_ordinal",
     ]
     config.SEARCH_RESULT_PROCESSORS = [
         'addok.helpers.results.match_housenumber',
@@ -18,7 +16,6 @@ def pytest_configure():
     config.PROCESSORS = [
         "addok.helpers.text.tokenize",
         "addok.helpers.text.normalize",
-        "addok_france.glue_ordinal",
-        "addok_france.fold_ordinal",
+        "addok_france.preprocess_housenumber",
         "addok.helpers.text.synonymize",
     ]
