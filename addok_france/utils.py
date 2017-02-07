@@ -132,3 +132,15 @@ def make_labels(helper, result):
                 label = '{} {}'.format(label, city)
                 add(labels, label)
             result.labels.extend(labels)
+
+
+def match_housenumber(helper, result):
+    if not helper.check_housenumber:
+        return
+    for token in sorted(helper.tokens, key=lambda t: t.position):
+        if token.kind == 'housenumber' and token in result.housenumbers:
+            data = result.housenumbers[str(token)]
+            result.housenumber = data.pop('raw')
+            result.type = 'housenumber'
+            result._cache.update(data)
+            break

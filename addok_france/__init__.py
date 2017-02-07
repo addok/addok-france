@@ -16,3 +16,4 @@ preprocess_housenumber = utils.preprocess_housenumber
 flag_housenumber = utils.flag_housenumber
 make_labels = utils.make_labels
 remove_leading_zeros = yielder(utils.remove_leading_zeros)
+match_housenumber = utils.match_housenumber

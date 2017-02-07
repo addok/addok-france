@@ -6,6 +6,7 @@ from addok_france.utils import (clean_query, extract_address, fold_ordinal,
 from addok.helpers.text import Token
 from addok.ds import get_document
 from addok.batch import process_documents
+from addok.core import search
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -182,3 +183,40 @@ def test_index_housenumbers_use_processors(config):
     process_documents(doc)
     stored = get_document('d|xxxx')
     assert stored['housenumbers']['1b']['raw'] == '1 bis'
+
+
+@pytest.mark.parametrize("input,expected", [
+    ('rue du 8 mai troyes', False),
+    ('8 rue du 8 mai troyes', '8'),
+    ('3 rue du 8 mai troyes', '3'),
+    ('3 bis rue du 8 mai troyes', '3 bis'),
+    ('3 bis r du 8 mai troyes', '3 bis'),
+])
+def test_match_housenumber(input, expected):
+    doc = {
+        'id': 'xxxx',
+        'type': 'street',
+        'name': 'rue du 8 Mai',
+        'city': 'Troyes',
+        'lat': '49.32545',
+        'lon': '4.2565',
+        'housenumbers': {
+            '3': {
+                'lat': '48.325451',
+                'lon': '2.25651'
+            },
+            '3 bis': {
+                'lat': '48.325451',
+                'lon': '2.25651'
+            },
+            '8': {
+                'lat': '48.325451',
+                'lon': '2.25651'
+            },
+        }
+    }
+    process_documents(doc)
+    result = search(input)[0]
+    assert (result.type == 'housenumber') == bool(expected)
+    if expected:
+        assert result.housenumber == expected
