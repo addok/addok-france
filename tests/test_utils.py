@@ -99,6 +99,7 @@ def test_extract_address(input, expected):
 
 @pytest.mark.parametrize("inputs,expected", [
     (['6', 'bis'], ['6bis']),
+    (['6'], ['6']),
     (['6', 'avenue'], ['6', 'avenue']),
     (['60', 'bis', 'avenue'], ['60bis', 'avenue']),
     (['600', 'ter', 'avenue'], ['600ter', 'avenue']),

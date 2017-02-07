@@ -59,7 +59,7 @@ def glue_ordinal(tokens):
     """Glue '3' and 'bis'."""
     previous = None
     for _, token, next_ in neighborhood(tokens):
-        if token.isdigit():
+        if next_ and token.isdigit():
             previous = token
             continue
         if previous is not None:
