@@ -3,7 +3,7 @@ import re
 from addok.helpers.text import Token
 
 TYPES = [
-    'avenue', 'rue', 'boulevard', 'all[ée]es?', 'impasse', 'place',
+    'av(enue)?', 'r(ue)?', 'b(oulevar)?d', 'all[ée]es?', 'impasse', 'place',
     'chemin', 'rocade', 'route', 'l[ôo]tissement', 'mont[ée]e', 'c[ôo]te',
     'clos', 'champ', 'bois', 'taillis', 'boucle', 'passage', 'domaine',
     'étang', 'etang', 'quai', 'desserte', 'pré', 'porte', 'square', 'mont',
@@ -77,6 +77,16 @@ def preprocess_housenumber(tokens):
 ordinal_pattern = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
                              flags=re.IGNORECASE)
 types_pattern = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
+
+
+def flag_housenumber(tokens):
+    for previous, token, next_ in neighborhood(tokens):
+        if ((not next_ or types_pattern.match(next_))
+           and number_pattern.match(token)):
+            token.kind = 'housenumber'
+        yield token
+
+number_pattern = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 
 def fold_ordinal(s):

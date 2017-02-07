@@ -1,7 +1,8 @@
 import pytest
 
 from addok_france.utils import (clean_query, extract_address, fold_ordinal,
-                                preprocess_housenumber, remove_leading_zeros)
+                                preprocess_housenumber, remove_leading_zeros,
+                                flag_housenumber)
 from addok.helpers.text import Token
 from addok.ds import get_document
 from addok.batch import process_documents
@@ -117,6 +118,30 @@ def test_extract_address(input, expected):
 def test_preprocess_housenumber(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
     assert list(preprocess_housenumber(tokens)) == expected
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['6b'], True),
+    (['6'], True),
+    (['6', 'avenue'], True),
+    (['60b', 'avenue'], True),
+    (['600t', 'avenue'], True),
+    (['6c', 'avenue'], True),
+    (['60s', 'avenue'], True),
+    (['600q', 'avenue'], True),
+    (['6s', 'avenue'], True),
+    (['60b', 'avenue'], True),
+    (['600b', 'avenue'], True),
+    (['241', 'r', 'de'], True),
+    (['241r', 'rue'], True),
+    (['place', 'des', 'terreaux'], False),
+    (['rue', 'du', 'bis'], False),
+])
+def test_flag_housenumber(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    tokens = list(flag_housenumber(tokens))
+    assert tokens == inputs
+    assert (tokens[0].kind == 'housenumber') == expected
 
 
 @pytest.mark.parametrize("input,expected", [

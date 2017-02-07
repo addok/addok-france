@@ -17,5 +17,6 @@ def pytest_configure():
         "addok.helpers.text.tokenize",
         "addok.helpers.text.normalize",
         "addok_france.preprocess_housenumber",
+        "addok_france.flag_housenumber",
         "addok.helpers.text.synonymize",
     ]
