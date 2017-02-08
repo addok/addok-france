@@ -55,7 +55,7 @@ def neighborhood(iterable, first=None, last=None):
     yield (previous, current, last)
 
 
-def preprocess_housenumber(tokens):
+def glue_ordinal(tokens):
     previous = None
     for _, token, next_ in neighborhood(tokens):
         if next_ and token.isdigit():
@@ -65,7 +65,7 @@ def preprocess_housenumber(tokens):
             # Matches "bis" either followed by a type or nothing.
             if (ordinal_pattern.match(token) and
                     (not next_ or types_pattern.match(next_))):
-                raw = '{} {}'.format(previous, fold_ordinal(token))
+                raw = '{} {}'.format(previous, token)
                 # Space removed to maximize chances to get a hit.
                 token = token.update(raw.replace(' ', ''), raw=raw)
             else:
@@ -91,7 +91,19 @@ number_pattern = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 def fold_ordinal(s):
     """3bis => 3b."""
-    return s.update(_FOLD.get(s.lower(), s))
+    if s[0].isdigit() and not s.isdigit():
+        try:
+            number, ordinal = fold_pattern.findall(s)[0]
+        except (IndexError, ValueError):
+            print(s, fold_pattern.findall(s))
+            pass
+        else:
+            s = s.update('{}{}'.format(number,
+                                       _FOLD.get(ordinal.lower(), ordinal)))
+    return s
+
+fold_pattern = re.compile(r'^(\d{1,4})(' + ORDINAL_REGEX + ')$',
+                          flags=re.IGNORECASE)
 _FOLD = {
     'bis': 'b',
     'ter': 't',

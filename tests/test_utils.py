@@ -1,12 +1,12 @@
 import pytest
 
-from addok_france.utils import (clean_query, extract_address, fold_ordinal,
-                                preprocess_housenumber, remove_leading_zeros,
-                                flag_housenumber)
-from addok.helpers.text import Token
-from addok.ds import get_document
 from addok.batch import process_documents
 from addok.core import search
+from addok.ds import get_document
+from addok.helpers.text import Token
+from addok_france.utils import (clean_query, extract_address, flag_housenumber,
+                                fold_ordinal, glue_ordinal,
+                                remove_leading_zeros)
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -102,14 +102,14 @@ def test_extract_address(input, expected):
 
 
 @pytest.mark.parametrize("inputs,expected", [
-    (['6', 'bis'], ['6b']),
+    (['6', 'bis'], ['6bis']),
     (['6'], ['6']),
     (['6', 'avenue'], ['6', 'avenue']),
-    (['60', 'bis', 'avenue'], ['60b', 'avenue']),
-    (['600', 'ter', 'avenue'], ['600t', 'avenue']),
-    (['6', 'quinquies', 'avenue'], ['6c', 'avenue']),
-    (['60', 'sexies', 'avenue'], ['60s', 'avenue']),
-    (['600', 'quater', 'avenue'], ['600q', 'avenue']),
+    (['60', 'bis', 'avenue'], ['60bis', 'avenue']),
+    (['600', 'ter', 'avenue'], ['600ter', 'avenue']),
+    (['6', 'quinquies', 'avenue'], ['6quinquies', 'avenue']),
+    (['60', 'sexies', 'avenue'], ['60sexies', 'avenue']),
+    (['600', 'quater', 'avenue'], ['600quater', 'avenue']),
     (['6', 's', 'avenue'], ['6s', 'avenue']),
     (['60b', 'avenue'], ['60b', 'avenue']),
     (['600', 'b', 'avenue'], ['600b', 'avenue']),
@@ -118,9 +118,9 @@ def test_extract_address(input, expected):
     (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
     (['rue', 'du', 'bis'], ['rue', 'du', 'bis']),
 ])
-def test_preprocess_housenumber(inputs, expected):
+def test_glue_ordinal(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
-    assert list(preprocess_housenumber(tokens)) == expected
+    assert list(glue_ordinal(tokens)) == expected
 
 
 @pytest.mark.parametrize("inputs,expected", [
@@ -148,11 +148,13 @@ def test_flag_housenumber(inputs, expected):
 
 
 @pytest.mark.parametrize("input,expected", [
-    ('bis', 'b'),
-    ('BIS', 'b'),
-    ('ter', 't'),
-    ('quater', 'q'),
-    ('quinquies', 'c'),
+    ('60bis', '60b'),
+    ('60BIS', '60b'),
+    ('60ter', '60t'),
+    ('4terre', '4terre'),
+    ('60quater', '60q'),
+    ('60 bis', '60 bis'),
+    ('bis', 'bis'),
 ])
 def test_fold_ordinal(input, expected):
     assert fold_ordinal(Token(input)) == expected
@@ -193,6 +195,7 @@ def test_index_housenumbers_use_processors(config):
     ('3 rue du 8 mai troyes', '3'),
     ('3 bis rue du 8 mai troyes', '3 bis'),
     ('3 bis r du 8 mai troyes', '3 bis'),
+    ('3bis r du 8 mai troyes', '3 bis'),
 ])
 def test_match_housenumber(input, expected):
     doc = {

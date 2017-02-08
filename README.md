@@ -20,7 +20,8 @@
 
     PROCESSORS = [
         …,
-        "addok_france.preprocess_housenumber",
+        "addok_france.glue_ordinal",
+        "addok_france.fold_ordinal",
         "addok_france.flag_housenumber",
         …,
     ]
