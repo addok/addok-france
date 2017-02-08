@@ -81,9 +81,9 @@ types_pattern = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
 
 def flag_housenumber(tokens):
     for previous, token, next_ in neighborhood(tokens):
-        if ((not next_ or types_pattern.match(next_))
-           and number_pattern.match(token)):
-            token.kind = 'housenumber'
+        if ((token.position == 0 or (next_ and types_pattern.match(next_)))
+            and number_pattern.match(token)):
+                token.kind = 'housenumber'
         yield token
 
 number_pattern = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
@@ -95,7 +95,6 @@ def fold_ordinal(s):
         try:
             number, ordinal = fold_pattern.findall(s)[0]
         except (IndexError, ValueError):
-            print(s, fold_pattern.findall(s))
             pass
         else:
             s = s.update('{}{}'.format(number,

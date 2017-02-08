@@ -139,6 +139,7 @@ def test_glue_ordinal(inputs, expected):
     (['241r', 'rue'], True),
     (['place', 'des', 'terreaux'], False),
     (['rue', 'du', 'bis'], False),
+    (['9', 'grand', 'rue'], True),
 ])
 def test_flag_housenumber(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
