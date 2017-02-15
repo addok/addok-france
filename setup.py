@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from codecs import open  # To use a consistent encoding
 from os import path
 
-VERSION = (0, 1, 0)
+VERSION = (1, 0, 0, 'rc', 1)
 
 here = path.abspath(path.dirname(__file__))
 
@@ -13,6 +13,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 def is_pkg(line):
     return line and not line.startswith(('--', 'git', '#'))
+
 
 with open('requirements.txt', encoding='utf-8') as reqs:
     install_requires = [l for l in reqs.read().split('\n') if is_pkg(l)]
@@ -37,8 +38,9 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
-    keywords='addok geocoding france',
+    keywords='addok geocoding france plugin',
     packages=find_packages(exclude=['tests']),
     install_requires=install_requires,
     extras_require={'test': ['pytest']},
