@@ -17,6 +17,39 @@ TYPES_REGEX = '|'.join(
 )
 ORDINAL_REGEX = 'bis|ter|quater|quinquies|sexies|[a-z]'
 
+FOLD = {
+    'bis': 'b',
+    'ter': 't',
+    'quater': 'q',
+    'quinquies': 'c',
+    'sexies': 's',
+}
+
+# Try to match address pattern when the search sting contains extra info (for
+# example "22 rue des Fleurs 59350 Lille" will be extracted from
+# "XYZ Ets bâtiment B 22 rue des Fleurs 59350 Lille Cedex 23").
+EXTRACT_ADDRESS_PATTERN = re.compile(
+    r'(\b\d{1,4}( *(' + ORDINAL_REGEX + '))?,? +(' + TYPES_REGEX + ') .*(\d{5})?).*',  # noqa
+    flags=re.IGNORECASE)
+
+# Match "bis", "ter", "b", etc.
+ORDINAL_PATTERN = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
+                             flags=re.IGNORECASE)
+
+# Match "rue", "boulevard", "bd", etc.
+TYPES_PATTERN = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
+
+
+# Match number + ordinal, once glued by glue_ordinal (or typed like this in the
+# search string, for example "6bis", "234ter").
+FOLD_PATTERN = re.compile(r'^(\d{1,4})(' + ORDINAL_REGEX + ')$',
+                          flags=re.IGNORECASE)
+
+
+# Match number once cleaned by glue_ordinal and fold_ordinal (for example
+# "6b", "234t"…)
+NUMBER_PATTERN = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
+
 
 def clean_query(q):
     q = re.sub('c(e|é)dex ?[\d]*', '', q, flags=re.IGNORECASE)
@@ -32,11 +65,8 @@ def clean_query(q):
 
 
 def extract_address(q):
-    m = extract_address_pattern.search(q)
+    m = EXTRACT_ADDRESS_PATTERN.search(q)
     return m.group() if m else q
-extract_address_pattern = re.compile(
-    r'(\b\d{1,4}( *(' + ORDINAL_REGEX + '))?,? +(' + TYPES_REGEX + ') .*(\d{5})?).*',  # noqa
-    flags=re.IGNORECASE)
 
 
 def neighborhood(iterable, first=None, last=None):
@@ -63,8 +93,8 @@ def glue_ordinal(tokens):
             continue
         if previous is not None:
             # Matches "bis" either followed by a type or nothing.
-            if (ordinal_pattern.match(token) and
-                    (not next_ or types_pattern.match(next_))):
+            if (ORDINAL_PATTERN.match(token) and
+                    (not next_ or TYPES_PATTERN.match(next_))):
                 raw = '{} {}'.format(previous, token)
                 # Space removed to maximize chances to get a hit.
                 token = token.update(raw.replace(' ', ''), raw=raw)
@@ -74,42 +104,26 @@ def glue_ordinal(tokens):
             previous = None
         yield token
 
-ordinal_pattern = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
-                             flags=re.IGNORECASE)
-types_pattern = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
-
 
 def flag_housenumber(tokens):
     for previous, token, next_ in neighborhood(tokens):
-        if ((token.position == 0 or (next_ and types_pattern.match(next_)))
-            and number_pattern.match(token)):
-                token.kind = 'housenumber'
+        if ((token.position == 0 or (next_ and TYPES_PATTERN.match(next_)))
+                and NUMBER_PATTERN.match(token)):
+            token.kind = 'housenumber'
         yield token
-
-number_pattern = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 
 def fold_ordinal(s):
     """3bis => 3b."""
     if s[0].isdigit() and not s.isdigit():
         try:
-            number, ordinal = fold_pattern.findall(s)[0]
+            number, ordinal = FOLD_PATTERN.findall(s)[0]
         except (IndexError, ValueError):
             pass
         else:
             s = s.update('{}{}'.format(number,
-                                       _FOLD.get(ordinal.lower(), ordinal)))
+                                       FOLD.get(ordinal.lower(), ordinal)))
     return s
-
-fold_pattern = re.compile(r'^(\d{1,4})(' + ORDINAL_REGEX + ')$',
-                          flags=re.IGNORECASE)
-_FOLD = {
-    'bis': 'b',
-    'ter': 't',
-    'quater': 'q',
-    'quinquies': 'c',
-    'sexies': 's',
-}
 
 
 def remove_leading_zeros(s):
