@@ -1,7 +1,5 @@
 import re
 
-from addok.helpers.text import Token
-
 TYPES = [
     'av(enue)?', 'r(ue)?', 'b(oulevar)?d', 'all[ée]es?', 'impasse', 'place',
     'chemin', 'rocade', 'route', 'l[ôo]tissement', 'mont[ée]e', 'c[ôo]te',
@@ -167,5 +165,5 @@ def match_housenumber(helper, result):
             data = result.housenumbers[str(token)]
             result.housenumber = data.pop('raw')
             result.type = 'housenumber'
-            result._cache.update(data)
+            result.update(data)
             break
