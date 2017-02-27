@@ -35,7 +35,7 @@ ORDINAL_PATTERN = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
                              flags=re.IGNORECASE)
 
 # Match "rue", "boulevard", "bd", etc.
-TYPES_PATTERN = re.compile(TYPES_REGEX, flags=re.IGNORECASE)
+TYPES_PATTERN = re.compile(r'\b(' + TYPES_REGEX + r')\b', flags=re.IGNORECASE)
 
 
 # Match number + ordinal, once glued by glue_ordinal (or typed like this in the

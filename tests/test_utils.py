@@ -116,6 +116,7 @@ def test_extract_address(input, expected):
     (['60b', 'avenue'], ['60b', 'avenue']),
     (['600', 'b', 'avenue'], ['600b', 'avenue']),
     (['241', 'r', 'de'], ['241', 'r', 'de']),
+    (['120', 'r', 'renard'], ['120', 'r', 'renard']),
     (['241', 'r', 'rue'], ['241r', 'rue']),
     (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
     (['rue', 'du', 'bis'], ['rue', 'du', 'bis']),
