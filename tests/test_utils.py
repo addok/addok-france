@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from addok.batch import process_documents
@@ -185,7 +187,7 @@ def test_index_housenumbers_use_processors(config):
             }
         }
     }
-    process_documents(doc)
+    process_documents(json.dumps(doc))
     stored = get_document('d|xxxx')
     assert stored['housenumbers']['1b']['raw'] == '1 bis'
 
@@ -221,7 +223,7 @@ def test_match_housenumber(input, expected):
             },
         }
     }
-    process_documents(doc)
+    process_documents(json.dumps(doc))
     result = search(input)[0]
     assert (result.type == 'housenumber') == bool(expected)
     if expected:
