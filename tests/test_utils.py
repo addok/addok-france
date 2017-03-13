@@ -229,3 +229,39 @@ def test_match_housenumber(input, expected):
     assert (result.type == 'housenumber') == bool(expected)
     if expected:
         assert result.housenumber == expected
+
+
+def test_match_housenumber_with_multiple_tokens(config):
+    config.SYNONYMS = {'18': 'dix huit'}
+    doc = {
+        'id': 'xxxx',
+        'type': 'street',
+        'name': 'rue du 8 Mai',
+        'city': 'Troyes',
+        'lat': '49.32545',
+        'lon': '4.2565',
+        'housenumbers': {
+            '8': {
+                'lat': '48.8',
+                'lon': '2.25651'
+            },
+            '10': {
+                'lat': '48.10',
+                'lon': '2.25651'
+            },
+            '18': {
+                'lat': '48.18',
+                'lon': '2.25651'
+            },
+        }
+    }
+    process_documents(json.dumps(doc))
+    result = search('8 rue du 8 mai')[0]
+    assert result.housenumber == '8'
+    assert result.lat == '48.8'
+    result = search('10 rue du 8 mai')[0]
+    assert result.housenumber == '10'
+    assert result.lat == '48.10'
+    result = search('18 rue du 8 mai')[0]
+    assert result.housenumber == '18'
+    assert result.lat == '48.18'

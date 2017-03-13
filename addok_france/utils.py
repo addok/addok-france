@@ -95,7 +95,7 @@ def glue_ordinal(tokens):
                     (not next_ or TYPES_PATTERN.match(next_))):
                 raw = '{} {}'.format(previous, token)
                 # Space removed to maximize chances to get a hit.
-                token = token.update(raw.replace(' ', ''), raw=raw)
+                token = previous.update(raw.replace(' ', ''), raw=raw)
             else:
                 # False positive.
                 yield previous
@@ -105,7 +105,7 @@ def glue_ordinal(tokens):
 
 def flag_housenumber(tokens):
     for previous, token, next_ in neighborhood(tokens):
-        if ((token.position == 0 or (next_ and TYPES_PATTERN.match(next_)))
+        if ((token.is_first or (next_ and TYPES_PATTERN.match(next_)))
                 and NUMBER_PATTERN.match(token)):
             token.kind = 'housenumber'
         yield token
@@ -160,10 +160,18 @@ def make_labels(helper, result):
 def match_housenumber(helper, result):
     if not helper.check_housenumber:
         return
+    tokens = []
     for token in sorted(helper.tokens, key=lambda t: t.position):
-        if token.kind == 'housenumber' and token in result.housenumbers:
-            data = result.housenumbers[str(token)]
-            result.housenumber = data.pop('raw')
-            result.type = 'housenumber'
-            result.update(data)
-            break
+        if token.kind == 'housenumber':
+            tokens.append(token)
+        elif tokens:
+            # Housenumber may have multiple tokens (eg. "dix huit"), we join
+            # those to match the way they have been processed by
+            # addok.helpers.index.prepare_housenumbers.
+            raw = ''.join(tokens)
+            if raw in result.housenumbers:
+                data = result.housenumbers[raw]
+                result.housenumber = data.pop('raw')
+                result.type = 'housenumber'
+                result.update(data)
+                break
