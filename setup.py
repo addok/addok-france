@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from codecs import open  # To use a consistent encoding
 from os import path
 
-VERSION = (1, 0, 0, 'rc', 1)
+VERSION = (1, 0, 0, 'rc', 2)
 
 here = path.abspath(path.dirname(__file__))
 
