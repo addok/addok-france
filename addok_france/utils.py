@@ -130,31 +130,33 @@ def remove_leading_zeros(s):
 
 
 def make_labels(helper, result):
-    if not result.labels:
-        housenumber = getattr(result, 'housenumber', None)
+    if result.labels:
+        return
+    housenumber = getattr(result, 'housenumber', None)
 
-        def add(labels, label):
+    def add(labels, label):
+        labels.insert(0, label)
+        if housenumber:
+            label = '{} {}'.format(housenumber, label)
             labels.insert(0, label)
-            if housenumber:
-                label = '{} {}'.format(housenumber, label)
-                labels.insert(0, label)
 
-        city = result.city
-        postcode = result.postcode
-        names = result._rawattr('name')
-        if not isinstance(names, (list, tuple)):
-            names = [names]
-        for name in names:
-            labels = []
-            label = name
-            add(labels, label)
-            if city and city != label:
-                if postcode:
-                    label = '{} {}'.format(label, postcode)
-                    add(labels, label)
+    city = result.city
+    postcode = result.postcode
+    names = result._rawattr('name')
+    if not isinstance(names, (list, tuple)):
+        names = [names]
+    for name in names:
+        labels = []
+        label = name
+        add(labels, label)
+        if city and city != label:
+            add(labels, '{} {}'.format(label, city))
+            if postcode:
+                label = '{} {}'.format(label, postcode)
+                add(labels, label)
                 label = '{} {}'.format(label, city)
                 add(labels, label)
-            result.labels.extend(labels)
+        result.labels.extend(labels)
 
 
 def match_housenumber(helper, result):

@@ -3,11 +3,11 @@ import json
 import pytest
 
 from addok.batch import process_documents
-from addok.core import search
+from addok.core import search, Result
 from addok.ds import get_document
 from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
-                                fold_ordinal, glue_ordinal,
+                                fold_ordinal, glue_ordinal, make_labels,
                                 remove_leading_zeros)
 
 
@@ -268,3 +268,37 @@ def test_match_housenumber_with_multiple_tokens(config):
     result = search('18 rue du 8 mai')[0]
     assert result.housenumber == '18'
     assert result.lat == '48.18'
+
+
+
+def test_make_labels(config):
+    doc = {
+        'id': 'xxxx',
+        '_id': 'yyyy',
+        'type': 'street',
+        'name': 'rue des Lilas',
+        'city': 'Paris',
+        'postcode': '75010',
+        'lat': '49.32545',
+        'lon': '4.2565',
+        'housenumbers': {
+            '1 bis': {
+                'lat': '48.325451',
+                'lon': '2.25651'
+            }
+        }
+    }
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|yyyy'))
+    result.housenumber = '1 bis'  # Simulate match_housenumber
+    make_labels(None, result)
+    assert result.labels == [
+        '1 bis rue des Lilas 75010 Paris',
+        'rue des Lilas 75010 Paris',
+        '1 bis rue des Lilas 75010',
+        'rue des Lilas 75010',
+        '1 bis rue des Lilas Paris',
+        'rue des Lilas Paris',
+        '1 bis rue des Lilas',
+        'rue des Lilas'
+    ]
