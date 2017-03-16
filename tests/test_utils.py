@@ -176,6 +176,7 @@ def test_remove_leading_zeros(input, expected):
 def test_index_housenumbers_use_processors(config):
     doc = {
         'id': 'xxxx',
+        '_id': 'yyyy',
         'type': 'street',
         'name': 'rue des Lilas',
         'city': 'Paris',
@@ -189,7 +190,7 @@ def test_index_housenumbers_use_processors(config):
         }
     }
     process_documents(json.dumps(doc))
-    stored = get_document('d|xxxx')
+    stored = get_document('d|yyyy')
     assert stored['housenumbers']['1b']['raw'] == '1 bis'
 
 
@@ -204,6 +205,7 @@ def test_index_housenumbers_use_processors(config):
 def test_match_housenumber(input, expected):
     doc = {
         'id': 'xxxx',
+        '_id': 'yyyy',
         'type': 'street',
         'name': 'rue du 8 Mai',
         'city': 'Troyes',
@@ -235,6 +237,7 @@ def test_match_housenumber_with_multiple_tokens(config):
     config.SYNONYMS = {'18': 'dix huit'}
     doc = {
         'id': 'xxxx',
+        '_id': 'yyyy',
         'type': 'street',
         'name': 'rue du 8 Mai',
         'city': 'Troyes',
