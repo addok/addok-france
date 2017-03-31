@@ -126,7 +126,8 @@ def fold_ordinal(s):
 
 def remove_leading_zeros(s):
     """0003 => 3."""
-    return re.sub("0*(\d+)", "\g<1>", s, flags=re.IGNORECASE)
+    # Limit digits from 1 to 3 in order to avoid processing postcodes.
+    return re.sub(r"\b0+(\d{1,3})\b", "\g<1>", s, flags=re.IGNORECASE)
 
 
 def make_labels(helper, result):
