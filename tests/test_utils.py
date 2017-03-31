@@ -167,6 +167,7 @@ def test_fold_ordinal(input, expected):
 @pytest.mark.parametrize("input,expected", [
     ('03', '3'),
     ('00009', '9'),
+    ('02230', '02230'),  # Do not affect postcodes.
     ('0', '0'),
 ])
 def test_remove_leading_zeros(input, expected):
