@@ -25,10 +25,9 @@
         …,
     ]
 
-- Replace default `match_housenumber` and `make_labels` by France dedicated ones:
+- Replace default `make_labels` by France dedicated one:
 
     SEARCH_RESULT_PROCESSORS_PYPATHS = [
-        'addok_france.match_housenumber',
         'addok_france.make_labels',
         …,
     ]
