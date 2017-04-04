@@ -271,7 +271,6 @@ def test_match_housenumber_with_multiple_tokens(config):
     assert result.lat == '48.18'
 
 
-
 def test_make_labels(config):
     doc = {
         'id': 'xxxx',

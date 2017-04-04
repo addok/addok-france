@@ -104,10 +104,13 @@ def glue_ordinal(tokens):
 
 
 def flag_housenumber(tokens):
+    # Only keep first match (avoid noise in the middle of the search query).
+    found = False
     for previous, token, next_ in neighborhood(tokens):
         if ((token.is_first or (next_ and TYPES_PATTERN.match(next_)))
-                and NUMBER_PATTERN.match(token)):
+                and NUMBER_PATTERN.match(token) and not found):
             token.kind = 'housenumber'
+            found = True
         yield token
 
 
@@ -160,23 +163,3 @@ def make_labels(helper, result):
                 label = '{} {}'.format(label, city)
                 add(labels, label)
         result.labels.extend(labels)
-
-
-def match_housenumber(helper, result):
-    if not helper.check_housenumber:
-        return
-    tokens = []
-    for token in sorted(helper.tokens, key=lambda t: t.position):
-        if token.kind == 'housenumber':
-            tokens.append(token)
-        elif tokens:
-            # Housenumber may have multiple tokens (eg. "dix huit"), we join
-            # those to match the way they have been processed by
-            # addok.helpers.index.prepare_housenumbers.
-            raw = ''.join(tokens)
-            if raw in result.housenumbers:
-                data = result.housenumbers[raw]
-                result.housenumber = data.pop('raw')
-                result.type = 'housenumber'
-                result.update(data)
-                break
