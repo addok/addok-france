@@ -303,3 +303,23 @@ def test_make_labels(config):
         '1 bis rue des Lilas',
         'rue des Lilas'
     ]
+
+
+def test_make_municipality_labels(config):
+    doc = {
+        'id': 'xxxx',
+        '_id': 'yyyy',
+        'type': 'municipality',
+        'name': 'Lille',
+        'city': 'Lille',
+        'postcode': '59000',
+        'lat': '49.32545',
+        'lon': '4.2565',
+    }
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|yyyy'))
+    make_labels(None, result)
+    assert result.labels == [
+        'Lille',
+        'Lille 59000',
+    ]

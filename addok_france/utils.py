@@ -149,6 +149,8 @@ def make_labels(helper, result):
     for name in names:
         labels = []
         label = name
+        if postcode and result.type == 'municipality':
+            add(labels, '{} {}'.format(label, postcode))
         add(labels, label)
         if city and city != label:
             add(labels, '{} {}'.format(label, city))
