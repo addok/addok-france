@@ -129,6 +129,8 @@ def test_glue_ordinal(inputs, expected):
 @pytest.mark.parametrize("inputs,expected", [
     (['6b'], True),
     (['6'], True),
+    (['9303'], True),
+    (['93031'], False),  # postcode
     (['6', 'avenue'], True),
     (['60b', 'avenue'], True),
     (['600t', 'avenue'], True),
