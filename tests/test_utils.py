@@ -322,5 +322,6 @@ def test_make_municipality_labels(config):
     make_labels(None, result)
     assert result.labels == [
         'Lille',
+        '59000 Lille',
         'Lille 59000',
     ]
