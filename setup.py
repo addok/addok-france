@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from codecs import open  # To use a consistent encoding
 from os import path
 
-VERSION = (1, 0, 0)
+VERSION = (1, 1, 0)
 
 here = path.abspath(path.dirname(__file__))
 
@@ -30,7 +30,7 @@ setup(
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering :: GIS',
