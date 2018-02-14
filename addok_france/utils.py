@@ -120,14 +120,17 @@ def flag_housenumber(tokens):
 
 def fold_ordinal(s):
     """3bis => 3b."""
-    if s[0].isdigit() and not s.isdigit():
+    if s is not None and s !='' and s[0].isdigit() and not s.isdigit():
         try:
             number, ordinal = FOLD_PATTERN.findall(s)[0]
         except (IndexError, ValueError):
             pass
         else:
-            s = s.update('{}{}'.format(number,
+            try:
+                s = s.update('{}{}'.format(number,
                                        FOLD.get(ordinal.lower(), ordinal)))
+            except:
+                pass
     return s
 
 
