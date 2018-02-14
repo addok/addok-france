@@ -75,6 +75,8 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
      "32bis Rue des Vosges 93290"),
     ("32bis Rue des Vosges 93290 télécopieur, 01-23-45-67-89",
      "32bis Rue des Vosges 93290"),
+    ("10 BLD DES F F I 85300 CHALLANS",
+     "10 BLD DES F F I FFI 85300 CHALLANS"),
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
