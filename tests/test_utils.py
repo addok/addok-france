@@ -49,6 +49,12 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
     ("Lieu-Dit", "Lieu-Dit"),
     ("rue de la rente du lieu-dit la gachère",
      "rue de la rente du lieu-dit la gachère"),
+    ("32bis Rue des Vosges93290",
+     "32bis Rue des Vosges 93290"),
+    ("20 avenue de Ségur TSA 30719 75334 Paris Cedex 07",
+     "20 avenue de Ségur 75334 Paris"),
+    ("20 rue saint germain CIDEX 304 89110 Poilly-sur-tholon",
+     "20 rue saint germain 89110 Poilly-sur-tholon"),
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
