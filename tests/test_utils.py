@@ -65,6 +65,16 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
      "20 rue saint germain 89110 Poilly-sur-tholon"),
     ("20 rue saint germain CIDEX N°304 89110 Poilly-sur-tholon",
      "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("20 rue saint germain 89110 Poilly-sur-tholon 01.23.45.67.89",
+     "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("32bis Rue des Vosges93290 fax: 0123456789",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 tel 01 23 45 67 89",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 telecopieur. 01/23/45/67/89",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 télécopieur, 01-23-45-67-89",
+     "32bis Rue des Vosges 93290"),
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
