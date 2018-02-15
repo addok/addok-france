@@ -50,7 +50,7 @@ NUMBER_PATTERN = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 
 def clean_query(q):
-    q = re.sub(r'(^| )(b\.?p\.?|cs|tsa|cidex) *(n(o|°|) *|)[\d]+ *', r'\1', q, flags=re.IGNORECASE)
+    q = re.sub(r'(^| )(boite postale|b\.?p\.?|cs|tsa|cidex) *(n(o|°|) *|)[\d]+ *', r'\1', q, flags=re.IGNORECASE)
     q = re.sub(r'([\d]{2})[\d]{3}(.*)c(e|é)dex ?[\d]*', r'\1\2', q, flags=re.IGNORECASE)
     q = re.sub(r'([^\d ])([\d]{5})([^\d]|$)', r'\1 \2 ', q, flags=re.IGNORECASE)
     q = re.sub('c(e|é)dex ?[\d]*', '', q, flags=re.IGNORECASE)
