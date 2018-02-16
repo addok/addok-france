@@ -111,7 +111,7 @@ def flag_housenumber(tokens):
     found = False
     for previous, token, next_ in neighborhood(tokens):
         if ((token.is_first or (next_ and TYPES_PATTERN.match(next_)))
-                and NUMBER_PATTERN.match(token) and not found):
+            and NUMBER_PATTERN.match(token) and not found):
             token.kind = 'housenumber'
             found = True
         yield token
@@ -119,7 +119,7 @@ def flag_housenumber(tokens):
 
 def fold_ordinal(s):
     """3bis => 3b."""
-    if s is not None and s !='' and s[0].isdigit() and not s.isdigit():
+    if s is not None and s != '' and s[0].isdigit() and not s.isdigit():
         try:
             number, ordinal = FOLD_PATTERN.findall(s)[0]
         except (IndexError, ValueError):
