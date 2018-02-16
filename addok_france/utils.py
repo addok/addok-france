@@ -127,24 +127,27 @@ def fold_ordinal(s):
         else:
             try:
                 s = s.update('{}{}'.format(number,
-                                       FOLD.get(ordinal.lower(), ordinal)))
+                             FOLD.get(ordinal.lower(), ordinal)))
             except:
                 pass
     return s
 
 
 def fold_initials(tokens):
+    """ folds 'F F I' into 'FFI' """
     initials = []
     for _, token, next_ in neighborhood(tokens):
-        if len(token)==1:
+        isinitial = len(token) == 1 and token.isalpha()
+        if isinitial:
             initials.append(token)
-        else:
-            if len(initial)>2:
-                initials[0].update("".join(initials))
-                yield initials[0]
+        if not next_ or not isinitial:
+            if len(initials) > 2:
+                yield initials[0].update("".join(initials))
             else:
                 for tk in initials:
                     yield tk
+            initials = []
+        if not isinitial:
             yield token
 
 
