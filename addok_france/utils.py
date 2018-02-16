@@ -50,9 +50,12 @@ NUMBER_PATTERN = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 
 def clean_query(q):
-    q = re.sub(r'(^| )(boite postale|b\.?p\.?|cs|tsa|cidex) *(n(o|°|) *|)[\d]+ *', r'\1', q, flags=re.IGNORECASE)
-    q = re.sub(r'([\d]{2})[\d]{3}(.*)c(e|é)dex ?[\d]*', r'\1\2', q, flags=re.IGNORECASE)
-    q = re.sub(r'([^\d ])([\d]{5})([^\d]|$)', r'\1 \2 ', q, flags=re.IGNORECASE)
+    q = re.sub(r'(^| )(boite postale|b\.?p\.?|cs|tsa|cidex) *(n(o|°|) *|)[\d]+ *',
+               r'\1', q, flags=re.IGNORECASE)
+    q = re.sub(r'([\d]{2})[\d]{3}(.*)c(e|é)dex ?[\d]*', r'\1\2',
+               q, flags=re.IGNORECASE)
+    q = re.sub(r'([^\d ])([\d]{5})([^\d]|$)', r'\1 \2 ',
+               q, flags=re.IGNORECASE)
     q = re.sub('c(e|é)dex ?[\d]*', '', q, flags=re.IGNORECASE)
     q = re.sub('\d{,2}(e|[eè]me) ([eé]tage)', '', q, flags=re.IGNORECASE)
     q = re.sub(r'((fax|t[eé]l|t[eé]l[eé]copieur)[ :,\.]*|)(\d{10}|[0-9][0-9][ -\./]\d\d[-\./ ]\d\d[-\./ ]\d\d[-\./ ]\d\d)', '', q, flags=re.IGNORECASE)
@@ -60,7 +63,8 @@ def clean_query(q):
     q = re.sub('[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
     q = re.sub('[ -]s/s[ -]', ' sous ', q, flags=re.IGNORECASE)
     q = re.sub('^lieux?[ -]?dits?\\b(?=.)', '', q, flags=re.IGNORECASE)
-    q = re.sub(r'(^| )(([A-Z]) ([A-Z]) (([A-Z]) )?(([A-Z]) )?(([A-Z])( |$))?)', r'\1\2\3\4\6\8\10 ', q, flags=re.IGNORECASE)
+    q = re.sub(r'(^| )(([A-Z]) ([A-Z]) (([A-Z]) )?(([A-Z]) )?(([A-Z])( |$))?)',
+               r'\1\2\3\4\6\8\10 ', q, flags=re.IGNORECASE)
     q = q.strip()
     return q
 
