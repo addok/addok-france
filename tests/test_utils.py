@@ -356,12 +356,18 @@ def test_make_municipality_labels(config):
 
 
 @pytest.mark.parametrize("inputs,expected", [
-    (['allee','a','b','c','toto'], ['allee','abc','toto']),
-    (['allee','a','b','c','toto','d','e','f'], ['allee','abc','toto','def']),
-    (['allee','a','2','c','toto'], ['allee','a','2','c','toto']),
-    (['allee','a','b','c'], ['allee','abc']),
-    (['allee','a','b','c','d'], ['allee','abcd']),
-    (['allee','a','b','c','d','e'], ['allee','abcde']),
+    (['allee', 'a', 'b', 'c', 'toto'],
+     ['allee', 'abc', 'toto']),
+    (['allee', 'a', 'b', 'c', 'toto', 'd', 'e', 'f'],
+     ['allee', 'abc', 'toto', 'def']),
+    (['allee', 'a', '2', 'c', 'toto'],
+     ['allee', 'a', '2', 'c', 'toto']),
+    (['allee', 'a', 'b', 'c'],
+     ['allee', 'abc']),
+    (['allee', 'a', 'b', 'c', 'd'],
+     ['allee', 'abcd']),
+    (['allee', 'a', 'b', 'c', 'd', 'e'],
+     ['allee', 'abcde']),
 ])
 def test_fold_initials(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
