@@ -8,7 +8,7 @@ from addok.ds import get_document
 from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
-                                remove_leading_zeros)
+                                remove_leading_zeros, fold_initials)
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -353,3 +353,31 @@ def test_make_municipality_labels(config):
         '59000 Lille',
         'Lille 59000',
     ]
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['6', 'bis'], ['6bis']),
+    (['6'], ['6']),
+    (['6', 'avenue'], ['6', 'avenue']),
+    (['60', 'bis', 'avenue'], ['60bis', 'avenue']),
+    (['600', 'ter', 'avenue'], ['600ter', 'avenue']),
+    (['6', 'quinquies', 'avenue'], ['6quinquies', 'avenue']),
+    (['60', 'sexies', 'avenue'], ['60sexies', 'avenue']),
+    (['600', 'quater', 'avenue'], ['600quater', 'avenue']),
+    (['6', 's', 'avenue'], ['6s', 'avenue']),
+    (['60b', 'avenue'], ['60b', 'avenue']),
+    (['600', 'b', 'avenue'], ['600b', 'avenue']),
+    (['241', 'r', 'de'], ['241', 'r', 'de']),
+    (['120', 'r', 'renard'], ['120', 'r', 'renard']),
+    (['241', 'r', 'rue'], ['241r', 'rue']),
+    (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
+    (['rue', 'du', 'bis'], ['rue', 'du', 'bis']),
+])
+@pytest.mark.parametrize("input,expected", [
+    (['allee','a','b','c'], ['allee','abc']),
+    (['allee','a','b','c','toto'], ['allee','abc','toto']),
+    (['allee','a','b','c','d'], ['allee','abcd']),
+    (['allee','a','b','c','d','e'], ['allee','abcde']),
+])
+def test_fold_initials(input, expected):
+    assert fold_initials(Token(input)) == expected

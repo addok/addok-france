@@ -133,6 +133,21 @@ def fold_ordinal(s):
     return s
 
 
+def fold_initials(tokens):
+    initials = []
+    for _, token, next_ in neighborhood(tokens):
+        if len(token)==1:
+            initials.append(token)
+        else:
+            if len(initial)>2:
+                initials[0].update("".join(initials))
+                yield initials[0]
+            else:
+                for tk in initials:
+                    yield tk
+            yield token
+
+
 def remove_leading_zeros(s):
     """0003 => 3."""
     # Limit digits from 1 to 3 in order to avoid processing postcodes.
