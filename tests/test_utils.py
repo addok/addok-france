@@ -8,7 +8,7 @@ from addok.ds import get_document
 from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
-                                remove_leading_zeros, fold_initials)
+                                remove_leading_zeros, glue_initials)
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -76,7 +76,7 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
     ("32bis Rue des Vosges 93290 télécopieur, 01-23-45-67-89",
      "32bis Rue des Vosges 93290"),
     ("10 BLD DES F F I 85300 CHALLANS",
-     "10 BLD DES F F I FFI 85300 CHALLANS"),
+     "10 BLD DES F F I 85300 CHALLANS"), # done by glue_initials
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
@@ -369,6 +369,6 @@ def test_make_municipality_labels(config):
     (['allee', 'a', 'b', 'c', 'd', 'e'],
      ['allee', 'abcde']),
 ])
-def test_fold_initials(inputs, expected):
+def test_glue_initials(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
-    assert list(fold_initials(tokens)) == expected
+    assert list(glue_initials(tokens)) == expected

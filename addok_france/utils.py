@@ -63,8 +63,6 @@ def clean_query(q):
     q = re.sub('[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
     q = re.sub('[ -]s/s[ -]', ' sous ', q, flags=re.IGNORECASE)
     q = re.sub('^lieux?[ -]?dits?\\b(?=.)', '', q, flags=re.IGNORECASE)
-    q = re.sub(r'(^| )(([A-Z]) ([A-Z]) (([A-Z]) )?(([A-Z]) )?(([A-Z])( |$))?)',
-               r'\1\2\3\4\6\8\10 ', q, flags=re.IGNORECASE)
     q = q.strip()
     return q
 
@@ -134,8 +132,8 @@ def fold_ordinal(s):
     return s
 
 
-def fold_initials(tokens):
-    """ folds 'F F I' into 'FFI' """
+def glue_initials(tokens):
+    """ glue 'F F I' into 'FFI' """
     initials = []
     for _, token, next_ in neighborhood(tokens):
         isinitial = len(token) == 1 and token.isalpha()
