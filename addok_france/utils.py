@@ -127,13 +127,13 @@ def fold_ordinal(s):
     return s
 
 
-FOLD_WORDS = ["mont", "val", "le", "la", "l"]
+GLUE_WORDS = ["mont", "val", "le", "la", "l", "champ"]
 
-def fold_words(tokens):
-    """ folds 'MONT GRIFFON' into 'MONTGRIFFON' """
+def glue_words(tokens):
+    """ glue 'MONT GRIFFON' into 'MONTGRIFFON' """
     for _, token, next_ in neighborhood(tokens):
         yield token
-        if token in FOLD_WORDS and next_ and next_.isalpha() and len(next_)>2:
+        if token in GLUE_WORDS and next_ and next_.isalpha() and len(next_)>2:
             yield token.update(token+next_)
 
 
