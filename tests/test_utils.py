@@ -8,7 +8,7 @@ from addok.ds import get_document
 from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
-                                remove_leading_zeros)
+                                remove_leading_zeros, glue_words)
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -331,3 +331,15 @@ def test_make_municipality_labels(config):
         '59000 Lille',
         'Lille 59000',
     ]
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['mont', 'griffon'], ['mont', 'montgriffon', 'griffon']),
+    (['champ', 'vallon'], ['champ', 'champvallon', 'vallon']),
+    (['val', 'suzon'], ['val', 'valsuzon', 'suzon']),
+    (['l', 'a', 'peu', 'pres'], ['l', 'a', 'peu', 'pres']),
+    (['l', 'un', 'des'], ['l', 'un', 'des']),
+])
+def test_glue_ordinal(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_words(tokens)) == expected
