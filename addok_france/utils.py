@@ -1,14 +1,14 @@
 import re
 
 TYPES = [
-    'av(enue)?', 'r(ue)?', 'b(oulevar)?d', 'all[ée]es?', 'impasse', 'place',
-    'chemin', 'rocade', 'route', 'l[ôo]tissement', 'mont[ée]e', 'c[ôo]te',
+    r'av(enue)?', r'r(ue)?', r'b(oulevar)?d', r'all[ée]es?', 'impasse', 'place',
+    'chemin', 'rocade', 'route', 'l[ôo]tissement', 'mont[ée]e', r'c[ôo]te',
     'clos', 'champ', 'bois', 'taillis', 'boucle', 'passage', 'domaine',
     'étang', 'etang', 'quai', 'desserte', 'pré', 'porte', 'square', 'mont',
     'r[ée]sidence', 'parc', 'cours?', 'promenade', 'hameau', 'faubourg',
-    'ilot', 'berges?', 'via', 'cit[ée]', 'sent(e|ier)', 'rond[- ][Pp]oint',
-    'pas(se)?', 'carrefour', 'traverse', 'giratoire', 'esplanade', 'voie',
-    'chauss[ée]e',
+    'ilot', r'berges?', 'via', r'cit[ée]', r'sent(e|ier)', r'rond[- ][Pp]oint',
+    r'pas(se)?', 'carrefour', 'traverse', 'giratoire', 'esplanade', 'voie',
+    'chauss[ée]e', r'd\d+'
 ]
 TYPES_REGEX = '|'.join(
     map(lambda x: '[{}{}]{}'.format(x[0], x[0].upper(), x[1:]), TYPES)
@@ -27,7 +27,7 @@ FOLD = {
 # example "22 rue des Fleurs 59350 Lille" will be extracted from
 # "XYZ Ets bâtiment B 22 rue des Fleurs 59350 Lille Cedex 23").
 EXTRACT_ADDRESS_PATTERN = re.compile(
-    r'(\b\d{1,4}( *(' + ORDINAL_REGEX + '))?,? +(' + TYPES_REGEX + ') .*(\d{5})?).*',  # noqa
+    r'((pk )?\b\d{1,4}( *(' + ORDINAL_REGEX + '))?,? +(' + TYPES_REGEX + ') .*(\d{5})?).*',  # noqa
     flags=re.IGNORECASE)
 
 # Match "bis", "ter", "b", etc.
@@ -46,7 +46,7 @@ FOLD_PATTERN = re.compile(r'^(\d{1,4})(' + ORDINAL_REGEX + ')$',
 
 # Match number once cleaned by glue_ordinal and fold_ordinal (for example
 # "6b", "234t"…)
-NUMBER_PATTERN = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
+NUMBER_PATTERN = re.compile(r'\b(pk)?\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 
 def clean_query(q):
@@ -84,22 +84,27 @@ def neighborhood(iterable, first=None, last=None):
 
 
 def glue_ordinal(tokens):
-    previous = None
-    for _, token, next_ in neighborhood(tokens):
-        if next_ and token.isdigit():
-            previous = token
+    candidate = None
+    for previous, token, next_ in neighborhood(tokens):
+        if not candidate and next_ and (token.isdigit() or (token == "pk" and next_.isdigit())):
+            candidate = token
             continue
-        if previous is not None:
-            # Matches "bis" either followed by a type or nothing.
-            if (ORDINAL_PATTERN.match(token) and
-                    (not next_ or TYPES_PATTERN.match(next_))):
-                raw = '{} {}'.format(previous, token)
+        # Yield a token without knowing next token and next x 2.
+        if candidate is not None:
+            if candidate == "pk":
+                raw = 'pk {}'.format(token)
                 # Space removed to maximize chances to get a hit.
-                token = previous.update(raw.replace(' ', ''), raw=raw)
+                token = token.update(raw.replace(' ', ''), raw=raw)
+            # Matches "bis" either followed by a type or nothing.
+            elif (ORDINAL_PATTERN.match(token) and
+                    (not next_ or TYPES_PATTERN.match(next_))):
+                raw = '{} {}'.format(candidate, token)
+                # Space removed to maximize chances to get a hit.
+                token = candidate.update(raw.replace(' ', ''), raw=raw)
             else:
                 # False positive.
-                yield previous
-            previous = None
+                yield candidate
+            candidate = None
         yield token
 
 
@@ -124,6 +129,8 @@ def fold_ordinal(s):
         else:
             s = s.update('{}{}'.format(number,
                                        FOLD.get(ordinal.lower(), ordinal)))
+    elif s.startswith("pk"):
+        s = s.update(s.raw.replace(" ", ""), raw=s.raw)
     return s
 
 
