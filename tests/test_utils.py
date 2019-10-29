@@ -80,6 +80,10 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
      "32bis Rue des Vosges 93290"),
     ("10 BLD DES F F I 85300 CHALLANS",
      "10 BLD DES F F I 85300 CHALLANS"), # done by glue_initials
+    ("6 rue de suisse 6000 Nice",
+     "6 rue de suisse 06000 Nice"),
+    ("6000 rue de suisse 6000 Nice",
+     "6000 rue de suisse 06000 Nice"),
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
