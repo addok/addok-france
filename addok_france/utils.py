@@ -60,7 +60,7 @@ def clean_query(q):
     q = re.sub(r'([^\d ])([\d]{5})([^\d]|$)', r'\1 \2 ',
                q, flags=re.IGNORECASE)
     q = re.sub(r'c(e|é)dex ?[\d]*', '', q, flags=re.IGNORECASE)
-    q = re.sub(r'\d{,2}(e|[eè]me) ([eé]tage)', '', q, flags=re.IGNORECASE)
+    q = re.sub(r'\d{,2}(e|[eè]me|er) ([eé]tage)', '', q, flags=re.IGNORECASE)
     q = re.sub(r'((fax|t[eé]l|t[eé]l[eé]copieur)[ :,\.]*|)(\d{10}|[0-9][0-9][ -\./]\d\d[-\./ ]\d\d[-\./ ]\d\d[-\./ ]\d\d)', '', q, flags=re.IGNORECASE)
     q = re.sub(r' {2,}', ' ', q, flags=re.IGNORECASE)
     q = re.sub(r'[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
