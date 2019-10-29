@@ -64,7 +64,7 @@ def clean_query(q):
     q = re.sub(r'((fax|t[eé]l|t[eé]l[eé]copieur)[ :,\.]*|)(\d{10}|[0-9][0-9][ -\./]\d\d[-\./ ]\d\d[-\./ ]\d\d[-\./ ]\d\d)', '', q, flags=re.IGNORECASE)
     q = re.sub(r' {2,}', ' ', q, flags=re.IGNORECASE)
     q = re.sub(r'[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
-    q = re.sub(r'[ -]s/s[ -]', ' sous ', q, flags=re.IGNORECASE)
+    q = re.sub(r'[ -]s/?s[ -]', ' sous ', q, flags=re.IGNORECASE)
     q = re.sub(r'^lieux?[ -]?dits?\b(?=.)', '', q, flags=re.IGNORECASE)
     q = re.sub(r' (\d{4}) ', r' 0\1 ', q, flags=re.IGNORECASE)
     q = q.strip()
