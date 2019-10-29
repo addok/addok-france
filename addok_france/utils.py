@@ -1,14 +1,17 @@
 import re
 
 TYPES = [
-    'av(enue)?', 'r(ue)?', 'b(oulevar)?d', 'all[ée]es?', 'impasse', 'place',
-    'chemin', 'rocade', 'route', 'l[ôo]tissement', 'mont[ée]e', 'c[ôo]te',
-    'clos', 'champ', 'bois', 'taillis', 'boucle', 'passage', 'domaine',
-    'étang', 'etang', 'quai', 'desserte', 'pré', 'porte', 'square', 'mont',
-    'r[ée]sidence', 'parc', 'cours?', 'promenade', 'hameau', 'faubourg',
-    'ilot', 'berges?', 'via', 'cit[ée]', 'sent(e|ier)', 'rond[- ][Pp]oint',
-    'pas(se)?', 'carrefour', 'traverse', 'giratoire', 'esplanade', 'voie',
-    'chauss[ée]e',
+    'av(enue)?', 'r(ue)?', 'b(oulevar|l?v?)?d', 'all([ée]es?)?', 'imp(asse)?', 'pl(ace)?',
+    'che?(m(in)?)?', 'rocade', 'r(ou)?te', 'l[ôo]t(issement)?', 'mont[ée]e', 'c[ôo]te',
+    'clos', 'ch(am)?p', 'bois', 'taillis', 'b(ou)?cle', 'pass(age)?', 'dom(aine)?',
+    '[ée]ta?ng', 'desserte', 'pré', 'porte', 'squ?(are)?', 'mont',
+    'r[ée]s(idence)?', 'parc', 'cours?', 'pro?m(enade)?', 'ham(eau)?', 'f(aubour|b|bour)?g',
+    'ilot', 'ber(ges?)?', 'via', 'cit[ée]', 'sent(e|ier)', 'rond[- ][Pp]oint', 'rd?pt',
+    'pas(se)?', 'carr?(efour)?', 'trav(erse)?', 'giratoire', 'espl?(anade)?', 'voie',
+    'chauss[ée]e', 'aer(odrome)?', 'gr(ande?)?', 'gr(e|es|s)?', 'anc(ien(ne)?)?', 'c(en)?tre',
+    'devi(ation)?', 'dig(ue)?', 'embr(anchement)?', 'jard(in)?', 'j(et)?te', 'p(asserel)?le',
+    'p(or)?te', 'p(lace)?tte', 'p(arvis|rv|vr)', 'q(ua|rt)(ier)?', 'qu?(ai)?',
+    'r(uel)?le','t(erra)?sse','tunn?(el)?', 'viad(uc)?', 'v(il)?la',
 ]
 TYPES_REGEX = '|'.join(
     map(lambda x: '[{}{}]{}'.format(x[0], x[0].upper(), x[1:]), TYPES)

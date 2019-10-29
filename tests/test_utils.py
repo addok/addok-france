@@ -131,6 +131,11 @@ def test_clean_query(input, expected):
      "boulevard jean larrieu 44000 mont de marsan"),
     ("PARC D ACTIVITE DE SAUMATY 26 AV ANDRE ROUSSIN 13016 MARSEILLE 16",
      "26 AV ANDRE ROUSSIN 13016 MARSEILLE 16"),
+    # Abréviations
+    ("resid goelands 28  bis imp des petrels 76460 Saint-valery-en-caux",
+     "28  bis imp des petrels 76460 Saint-valery-en-caux"),
+    ("bla bla bl 28 r des moulins",
+     "28 r des moulins"),
     ("Non matching pattern",
      "Non matching pattern"),
 ])
