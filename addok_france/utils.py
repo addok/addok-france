@@ -50,14 +50,20 @@ NUMBER_PATTERN = re.compile(r'\b\d{1,4}[a-z]?\b', flags=re.IGNORECASE)
 
 
 def clean_query(q):
-    q = re.sub(r'([\d]{5})', r' \1 ', q, flags=re.IGNORECASE)
-    q = re.sub('c(e|é)dex ?[\d]*', '', q, flags=re.IGNORECASE)
-    q = re.sub(r'\b(bp|cs|tsa|cidex) *[\d]*', '', q, flags=re.IGNORECASE)
-    q = re.sub('\d{,2}(e|[eè]me) ([eé]tage)', '', q, flags=re.IGNORECASE)
-    q = re.sub(' {2,}', ' ', q, flags=re.IGNORECASE)
-    q = re.sub('[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
-    q = re.sub('[ -]s/s[ -]', ' sous ', q, flags=re.IGNORECASE)
-    q = re.sub('^lieux?[ -]?dits?\\b(?=.)', '', q, flags=re.IGNORECASE)
+    q = re.sub(r'(^| )(boite postale|b\.?p\.?|cs|tsa|cidex) *(n(o|°|) *|)[\d]+ *',
+               r'\1', q, flags=re.IGNORECASE)
+    q = re.sub(r'([\d]{2})[\d]{3}(.*)c(e|é)dex ?[\d]*', r'\1\2',
+               q, flags=re.IGNORECASE)
+    q = re.sub(r'([^\d ])([\d]{5})([^\d]|$)', r'\1 \2 ',
+               q, flags=re.IGNORECASE)
+    q = re.sub(r'c(e|é)dex ?[\d]*', '', q, flags=re.IGNORECASE)
+    q = re.sub(r'\d{,2}(e|[eè]me) ([eé]tage)', '', q, flags=re.IGNORECASE)
+    q = re.sub(r'((fax|t[eé]l|t[eé]l[eé]copieur)[ :,\.]*|)(\d{10}|[0-9][0-9][ -\./]\d\d[-\./ ]\d\d[-\./ ]\d\d[-\./ ]\d\d)', '', q, flags=re.IGNORECASE)
+    q = re.sub(r' {2,}', ' ', q, flags=re.IGNORECASE)
+    q = re.sub(r'[ -]s/[ -]', ' sur ', q, flags=re.IGNORECASE)
+    q = re.sub(r'[ -]s/s[ -]', ' sous ', q, flags=re.IGNORECASE)
+    q = re.sub(r'^lieux?[ -]?dits?\b(?=.)', '', q, flags=re.IGNORECASE)
+    q = re.sub(r' (\d{4}) ', r' 0\1 ', q, flags=re.IGNORECASE)
     q = q.strip()
     return q
 
@@ -108,7 +114,7 @@ def flag_housenumber(tokens):
     found = False
     for previous, token, next_ in neighborhood(tokens):
         if ((token.is_first or (next_ and TYPES_PATTERN.match(next_)))
-                and NUMBER_PATTERN.match(token) and not found):
+            and NUMBER_PATTERN.match(token) and not found):
             token.kind = 'housenumber'
             found = True
         yield token
@@ -123,7 +129,7 @@ def fold_ordinal(s):
             pass
         else:
             s = s.update('{}{}'.format(number,
-                                       FOLD.get(ordinal.lower(), ordinal)))
+                         FOLD.get(ordinal.lower(), ordinal)))
     return s
 
 
@@ -132,9 +138,28 @@ GLUE_WORDS = ["mont", "val", "le", "la", "l", "champ"]
 def glue_words(tokens):
     """ glue 'MONT GRIFFON' into 'MONTGRIFFON' """
     for _, token, next_ in neighborhood(tokens):
-        yield token
+        if token != next_:
+            yield token
         if token in GLUE_WORDS and next_ and next_.isalpha() and len(next_)>2:
             yield token.update(token+next_)
+
+
+def glue_initials(tokens):
+    """ glue 'F F I' into 'FFI' """
+    initials = []
+    for _, token, next_ in neighborhood(tokens):
+        isinitial = len(token) == 1 and token.isalpha()
+        if isinitial:
+            initials.append(token)
+        if not next_ or not isinitial:
+            if len(initials) > 2:
+                yield initials[0].update("".join(initials))
+            else:
+                for tk in initials:
+                    yield tk
+            initials = []
+        if not isinitial:
+            yield token
 
 
 def remove_leading_zeros(s):

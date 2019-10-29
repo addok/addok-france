@@ -8,17 +8,22 @@ from addok.ds import get_document
 from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
-                                remove_leading_zeros, glue_words)
+                                remove_leading_zeros, glue_words,
+                                glue_initials)
 
 
 @pytest.mark.parametrize("input,expected", [
     ("2 allée Jules Guesde 31068 TOULOUSE CEDEX 7",
-     "2 allée Jules Guesde 31068 TOULOUSE"),
+     "2 allée Jules Guesde 31 TOULOUSE"),
     ("7, avenue Léon-Blum 31507 Toulouse Cedex 5",
-     "7, avenue Léon-Blum 31507 Toulouse"),
+     "7, avenue Léon-Blum 31 Toulouse"),
     ("159, avenue Jacques-Douzans 31604 Muret Cedex",
-     "159, avenue Jacques-Douzans 31604 Muret"),
+     "159, avenue Jacques-Douzans 31 Muret"),
     ("2 allée Jules Guesde BP 7015 31068 TOULOUSE",
+     "2 allée Jules Guesde 31068 TOULOUSE"),
+    ("2 allée Jules Guesde B.P. 7015 31068 TOULOUSE",
+     "2 allée Jules Guesde 31068 TOULOUSE"),
+    ("2 allée Jules Guesde B.P. N 7015 31068 TOULOUSE",
      "2 allée Jules Guesde 31068 TOULOUSE"),
     ("BP 80111 159, avenue Jacques-Douzans 31604 Muret",
      "159, avenue Jacques-Douzans 31604 Muret"),
@@ -27,7 +32,7 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
     ("6, rue Winston-Churchill CS 40055 60321 Compiègne",
      "6, rue Winston-Churchill 60321 Compiègne"),
     ("BP 80111 159, avenue Jacques-Douzans 31604 Muret Cedex",
-     "159, avenue Jacques-Douzans 31604 Muret"),
+     "159, avenue Jacques-Douzans 31 Muret"),
     ("BP 20169 Cite administrative - 8e étage Rue Gustave-Delory 59017 Lille",
      "Cite administrative - Rue Gustave-Delory 59017 Lille"),
     ("12e étage Rue Gustave-Delory 59017 Lille",
@@ -52,9 +57,27 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
     ("32bis Rue des Vosges93290",
      "32bis Rue des Vosges 93290"),
     ("20 avenue de Ségur TSA 30719 75334 Paris Cedex 07",
-     "20 avenue de Ségur 75334 Paris"),
+     "20 avenue de Ségur 75 Paris"),
+    ("20 avenue de Ségur TSA No30719 75334 Paris Cedex 07",
+     "20 avenue de Ségur 75 Paris"),
+    ("20 avenue de Ségur TSA N 30719 75334 Paris Cedex 07",
+     "20 avenue de Ségur 75 Paris"),
     ("20 rue saint germain CIDEX 304 89110 Poilly-sur-tholon",
      "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("20 rue saint germain CIDEX N°304 89110 Poilly-sur-tholon",
+     "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("20 rue saint germain 89110 Poilly-sur-tholon 01.23.45.67.89",
+     "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("32bis Rue des Vosges93290 fax: 0123456789",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 tel 01 23 45 67 89",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 telecopieur. 01/23/45/67/89",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 télécopieur, 01-23-45-67-89",
+     "32bis Rue des Vosges 93290"),
+    ("10 BLD DES F F I 85300 CHALLANS",
+     "10 BLD DES F F I 85300 CHALLANS"), # done by glue_initials
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
@@ -343,3 +366,22 @@ def test_make_municipality_labels(config):
 def test_glue_ordinal(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
     assert list(glue_words(tokens)) == expected
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['allee', 'a', 'b', 'c', 'toto'],
+     ['allee', 'abc', 'toto']),
+    (['allee', 'a', 'b', 'c', 'toto', 'd', 'e', 'f'],
+     ['allee', 'abc', 'toto', 'def']),
+    (['allee', 'a', '2', 'c', 'toto'],
+     ['allee', 'a', '2', 'c', 'toto']),
+    (['allee', 'a', 'b', 'c'],
+     ['allee', 'abc']),
+    (['allee', 'a', 'b', 'c', 'd'],
+     ['allee', 'abcd']),
+    (['allee', 'a', 'b', 'c', 'd', 'e'],
+     ['allee', 'abcde']),
+])
+def test_glue_initials(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_initials(tokens)) == expected

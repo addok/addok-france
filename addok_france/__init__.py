@@ -15,6 +15,7 @@ extract_address = yielder(utils.extract_address)
 glue_ordinal = utils.glue_ordinal
 fold_ordinal = yielder(utils.fold_ordinal)
 glue_words = utils.glue_words
+glue_initials = utils.glue_initials
 flag_housenumber = utils.flag_housenumber
 make_labels = utils.make_labels
 remove_leading_zeros = yielder(utils.remove_leading_zeros)
