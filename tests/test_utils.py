@@ -1,11 +1,11 @@
 import json
 
 import pytest
-
 from addok.batch import process_documents
 from addok.core import search, Result
 from addok.ds import get_document
 from addok.helpers.text import Token
+
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
                                 remove_leading_zeros)
@@ -303,12 +303,72 @@ def test_make_labels(config):
     assert result.labels == [
         '1 bis rue des Lilas 75010 Paris',
         'rue des Lilas 75010 Paris',
-        '1 bis rue des Lilas 75010',
-        'rue des Lilas 75010',
         '1 bis rue des Lilas Paris',
+        '1 bis rue des Lilas 75010',
         'rue des Lilas Paris',
+        'rue des Lilas 75010',
         '1 bis rue des Lilas',
         'rue des Lilas'
+    ]
+
+
+def test_make_labels_merged_cities(config):
+    doc = {
+        "_id": "53543a313139353538390000",
+        "id": "53543a313139353538390000",
+        "type": "street",
+        "postcode": "49120",
+        "hexacleStreet": "492812226P",
+        "lat": "47.1469",
+        "lon": "-0.75745",
+        "context": "49, Maine-et-Loire, Pays de la Loire",
+        "importance": 1,
+        "userLabel": "RUE PIERRE LEPOUREAU",
+        "name": "RUE PIERRE LEPOUREAU",
+        "housenumbers": {
+            "2 BIS": {
+                "hexacleNumber": "49281222UE",
+                "lat": "47.1504",
+                "lon": "-0.757414"
+            }
+        },
+        "cityAfnorLabel": "CHEMILLE EN ANJOU",
+        "userCityLabel": "ST GEORGES DES GARDES (CHEMILLE EN ANJOU)",
+        "cityAliasAfnorLabel": "ST GEORGES DES GARDES",
+        "city": [
+            "ST GEORGES DES GARDES (CHEMILLE EN ANJOU)",
+            "ST GEORGES DES GARDES",
+            "CHEMILLE EN ANJOU",
+            "SAINT GEORGES DES GARDES"
+        ]
+    }
+
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|53543a313139353538390000'))
+    result.housenumber = '2 bis'  # Simulate match_housenumber
+    make_labels(None, result)
+
+    assert result.labels == [
+        '2 bis RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES (CHEMILLE EN ANJOU)',
+        'RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES (CHEMILLE EN ANJOU)',
+        '2 bis RUE PIERRE LEPOUREAU ST GEORGES DES GARDES (CHEMILLE EN ANJOU)',
+        'RUE PIERRE LEPOUREAU ST GEORGES DES GARDES (CHEMILLE EN ANJOU)',
+        '2 bis RUE PIERRE LEPOUREAU 49120 SAINT GEORGES DES GARDES',
+        '2 bis RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES',
+        'RUE PIERRE LEPOUREAU 49120 SAINT GEORGES DES GARDES',
+        '2 bis RUE PIERRE LEPOUREAU SAINT GEORGES DES GARDES',
+        '2 bis RUE PIERRE LEPOUREAU 49120 CHEMILLE EN ANJOU',
+        'RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES',
+        '2 bis RUE PIERRE LEPOUREAU ST GEORGES DES GARDES',
+        'RUE PIERRE LEPOUREAU SAINT GEORGES DES GARDES',
+        'RUE PIERRE LEPOUREAU 49120 CHEMILLE EN ANJOU',
+        '2 bis RUE PIERRE LEPOUREAU CHEMILLE EN ANJOU',
+        'RUE PIERRE LEPOUREAU ST GEORGES DES GARDES',
+        'RUE PIERRE LEPOUREAU CHEMILLE EN ANJOU',
+        '2 bis RUE PIERRE LEPOUREAU 49120',
+        'RUE PIERRE LEPOUREAU 49120',
+        '2 bis RUE PIERRE LEPOUREAU',
+        'RUE PIERRE LEPOUREAU'
     ]
 
 
@@ -327,7 +387,7 @@ def test_make_municipality_labels(config):
     result = Result(get_document('d|yyyy'))
     make_labels(None, result)
     assert result.labels == [
-        'Lille',
-        '59000 Lille',
         'Lille 59000',
+        '59000 Lille',
+        'Lille'
     ]
