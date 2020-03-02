@@ -37,12 +37,10 @@ ORDINAL_PATTERN = re.compile(r'\b(' + ORDINAL_REGEX + r')\b',
 # Match "rue", "boulevard", "bd", etc.
 TYPES_PATTERN = re.compile(r'\b(' + TYPES_REGEX + r')\b', flags=re.IGNORECASE)
 
-
 # Match number + ordinal, once glued by glue_ordinal (or typed like this in the
 # search string, for example "6bis", "234ter").
 FOLD_PATTERN = re.compile(r'^(\d{1,4})(' + ORDINAL_REGEX + ')$',
                           flags=re.IGNORECASE)
-
 
 # Match number once cleaned by glue_ordinal and fold_ordinal (for example
 # "6b", "234t"…)
@@ -139,28 +137,37 @@ def make_labels(helper, result):
     housenumber = getattr(result, 'housenumber', None)
 
     def add(labels, label):
-        labels.insert(0, label)
+        labels.add(label)
         if housenumber:
             label = '{} {}'.format(housenumber, label)
-            labels.insert(0, label)
+            labels.add(label)
 
-    city = result.city
+    raw_cities = result._rawattr("city")
+
+    if isinstance(raw_cities, list):
+        cities = raw_cities
+    else:
+        cities = [raw_cities]
+
     postcode = result.postcode
-    names = result._rawattr('name')
-    if not isinstance(names, (list, tuple)):
-        names = [names]
-    for name in names:
-        labels = []
-        label = name
-        if postcode and result.type == 'municipality':
-            add(labels, '{} {}'.format(label, postcode))
-            add(labels, '{} {}'.format(postcode, label))
-        add(labels, label)
-        if city and city != label:
-            add(labels, '{} {}'.format(label, city))
-            if postcode:
-                label = '{} {}'.format(label, postcode)
-                add(labels, label)
-                label = '{} {}'.format(label, city)
-                add(labels, label)
-        result.labels.extend(labels)
+    names = getattr(result, 'name', None)
+    labels = set()
+
+    for city in cities:
+        if not isinstance(names, (list, tuple)):
+            names = [names]
+        for name in names:
+            label = name
+            if postcode and result.type == 'municipality':
+                add(labels, '{} {}'.format(label, postcode))
+                add(labels, '{} {}'.format(postcode, label))
+            add(labels, label)
+            if city and city != label:
+                add(labels, '{} {}'.format(label, city))
+                if postcode:
+                    label = '{} {}'.format(label, postcode)
+                    add(labels, label)
+                    label = '{} {}'.format(label, city)
+                    add(labels, label)
+
+    result.labels.extend(sorted(list(labels), key=lambda item: (len(item), item), reverse=True))
