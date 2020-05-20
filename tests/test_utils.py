@@ -126,6 +126,8 @@ def test_extract_address(input, expected):
     (['241', 'r', 'rue'], ['241r', 'rue']),
     (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
     (['rue', 'du', 'bis'], ['rue', 'du', 'bis']),
+    (['pk', '25'], ['pk25']),
+    (['pk', '25', 'd39'], ['pk25', 'd39']),
 ])
 def test_glue_ordinal(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
@@ -151,6 +153,7 @@ def test_glue_ordinal(inputs, expected):
     (['place', 'des', 'terreaux'], False),
     (['rue', 'du', 'bis'], False),
     (['9', 'grand', 'rue'], True),
+    (['pk25', 'd39'], True),
 ])
 def test_flag_housenumber(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
