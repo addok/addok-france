@@ -4,7 +4,7 @@ TYPES = [
     'av(enue)?', 'r(ue)?', 'b(oulevar|l?v?)?d', 'all([ée]es?)?', 'imp(asse)?', 'pl(ace)?',
     'che?(m(in)?)?', 'rocade', 'r(ou)?te', 'l[ôo]t(issement)?', 'mont[ée]e', 'c[ôo]te',
     'clos', 'ch(am)?p', 'bois', 'taillis', 'b(ou)?cle', 'pass(age)?', 'dom(aine)?',
-    '[ée]ta?ng', 'desserte', 'pré', 'porte', 'squ?(are)?', 'mont',
+    'eta?ng', 'éta?ng', 'desserte', 'pré', 'porte', 'squ?(are)?', 'mont',
     'r[ée]s(idence)?', 'parc', 'cours?', 'pro?m(enade)?', 'ham(eau)?', 'f(aubour|b|bour)?g',
     'ilot', 'ber(ges?)?', 'via', 'cit[ée]', 'sent(e|ier)', 'rond[- ][Pp]oint', 'rd?pt',
     'pas(se)?', 'carr?(efour)?', 'trav(erse)?', 'giratoire', 'espl?(anade)?', 'voie',
