@@ -84,7 +84,11 @@ def neighborhood(iterable, first=None, last=None):
     """
     iterator = iter(iterable)
     previous = first
-    current = next(iterator)  # Throws StopIteration if empty.
+    try:
+        current = next(iterator)
+    except StopIteration:  # StopIteration if empty.
+        return
+
     for next_ in iterator:
         yield (previous, current, next_)
         previous = current
