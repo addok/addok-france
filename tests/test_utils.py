@@ -9,7 +9,7 @@ from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
                                 remove_leading_zeros, glue_words,
-                                glue_initials)
+                                glue_initials, glue_refs)
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -173,6 +173,18 @@ def test_extract_address(input, expected):
 def test_glue_ordinal(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
     assert list(glue_ordinal(tokens)) == expected
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['d', '412'], ['d412']),
+    (['rd', '30'], ['d30']),
+    (['d', '30', 'a', '4'], ['d30', 'a4']),
+    (['route', 'd', '30', 'a', '4','b'], ['route', 'd30', 'a4', 'b']),
+    (['route', '30', 'a'], ['route', '30', 'a']),
+])
+def test_glue_refs(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_refs(tokens)) == expected
 
 
 @pytest.mark.parametrize("inputs,expected", [
