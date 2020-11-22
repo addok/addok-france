@@ -8,29 +8,42 @@ from addok.ds import get_document
 from addok.helpers.text import Token
 from addok_france.utils import (clean_query, extract_address, flag_housenumber,
                                 fold_ordinal, glue_ordinal, make_labels,
-                                remove_leading_zeros)
+                                remove_leading_zeros, glue_words,
+                                glue_initials, glue_refs)
 
 
 @pytest.mark.parametrize("input,expected", [
     ("2 allée Jules Guesde 31068 TOULOUSE CEDEX 7",
-     "2 allée Jules Guesde 31068 TOULOUSE"),
+     "2 allée Jules Guesde 31 TOULOUSE"),
     ("7, avenue Léon-Blum 31507 Toulouse Cedex 5",
-     "7, avenue Léon-Blum 31507 Toulouse"),
+     "7, avenue Léon-Blum 31 Toulouse"),
     ("159, avenue Jacques-Douzans 31604 Muret Cedex",
-     "159, avenue Jacques-Douzans 31604 Muret"),
+     "159, avenue Jacques-Douzans 31 Muret"),
     ("2 allée Jules Guesde BP 7015 31068 TOULOUSE",
+     "2 allée Jules Guesde 31068 TOULOUSE"),
+    ("2 allée Jules Guesde B.P. 7015 31068 TOULOUSE",
+     "2 allée Jules Guesde 31068 TOULOUSE"),
+    ("2 allée Jules Guesde B.P. N 7015 31068 TOULOUSE",
      "2 allée Jules Guesde 31068 TOULOUSE"),
     ("BP 80111 159, avenue Jacques-Douzans 31604 Muret",
      "159, avenue Jacques-Douzans 31604 Muret"),
     ("12, place de l'Hôtel-de-Ville BP 46 02150 Sissonne",
      "12, place de l'Hôtel-de-Ville 02150 Sissonne"),
+    ("12, place de l'Hôtel-de-Ville boite postale 46 02150 Sissonne",
+     "12, place de l'Hôtel-de-Ville 02150 Sissonne"),
+    ("12, place de l'Hôtel-de-Ville case postale 46 02150 Sissonne",
+     "12, place de l'Hôtel-de-Ville 02150 Sissonne"),
+    ("12, place de l'Hôtel-de-Ville bte postale 46 02150 Sissonne",
+     "12, place de l'Hôtel-de-Ville 02150 Sissonne"),
     ("6, rue Winston-Churchill CS 40055 60321 Compiègne",
      "6, rue Winston-Churchill 60321 Compiègne"),
     ("BP 80111 159, avenue Jacques-Douzans 31604 Muret Cedex",
-     "159, avenue Jacques-Douzans 31604 Muret"),
+     "159, avenue Jacques-Douzans 31 Muret"),
     ("BP 20169 Cite administrative - 8e étage Rue Gustave-Delory 59017 Lille",
      "Cite administrative - Rue Gustave-Delory 59017 Lille"),
     ("12e étage Rue Gustave-Delory 59017 Lille",
+     "Rue Gustave-Delory 59017 Lille"),
+    ("Rue Gustave-Delory 1er étage 59017 Lille",
      "Rue Gustave-Delory 59017 Lille"),
     ("12eme étage Rue Gustave-Delory 59017 Lille",
      "Rue Gustave-Delory 59017 Lille"),
@@ -41,6 +54,7 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
     ("air s/ l'adour", "air sur l'adour"),
     ("air-s/-l'adour", "air sur l'adour"),
     ("Saint Didier s/s Ecouves", "Saint Didier sous Ecouves"),
+    ("Saint Didier ss Ecouves", "Saint Didier sous Ecouves"),
     ("La Chapelle-aux-Brocs", "La Chapelle-aux-Brocs"),
     ("Lieu-Dit Les Chênes", "Les Chênes"),
     ("Lieu Dit Les Chênes", "Les Chênes"),
@@ -52,9 +66,33 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
     ("32bis Rue des Vosges93290",
      "32bis Rue des Vosges 93290"),
     ("20 avenue de Ségur TSA 30719 75334 Paris Cedex 07",
-     "20 avenue de Ségur 75334 Paris"),
+     "20 avenue de Ségur 75 Paris"),
+    ("20 avenue de Ségur TSA No30719 75334 Paris Cedex 07",
+     "20 avenue de Ségur 75 Paris"),
+    ("20 avenue de Ségur TSA N 30719 75334 Paris Cedex 07",
+     "20 avenue de Ségur 75 Paris"),
+    ("20 avenue de Ségur TSA N°30719 75334 Paris Cedex 07",
+     "20 avenue de Ségur 75 Paris"),
     ("20 rue saint germain CIDEX 304 89110 Poilly-sur-tholon",
      "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("20 rue saint germain CIDEX N°304 89110 Poilly-sur-tholon",
+     "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("20 rue saint germain 89110 Poilly-sur-tholon 01.23.45.67.89",
+     "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("32bis Rue des Vosges93290 fax: 0123456789",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 tel 01 23 45 67 89",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 telecopieur. 01/23/45/67/89",
+     "32bis Rue des Vosges 93290"),
+    ("32bis Rue des Vosges 93290 télécopieur, 01-23-45-67-89",
+     "32bis Rue des Vosges 93290"),
+    ("10 BLD DES F F I 85300 CHALLANS",
+     "10 BLD DES F F I 85300 CHALLANS"), # done by glue_initials
+    ("6 rue de suisse 6000 Nice",
+     "6 rue de suisse 06000 Nice"),
+    ("6000 rue de suisse 6000 Nice",
+     "6000 rue de suisse 06000 Nice"),
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
@@ -102,6 +140,11 @@ def test_clean_query(input, expected):
      "boulevard jean larrieu 44000 mont de marsan"),
     ("PARC D ACTIVITE DE SAUMATY 26 AV ANDRE ROUSSIN 13016 MARSEILLE 16",
      "26 AV ANDRE ROUSSIN 13016 MARSEILLE 16"),
+    # Abréviations
+    ("resid goelands 28  bis imp des petrels 76460 Saint-valery-en-caux",
+     "28  bis imp des petrels 76460 Saint-valery-en-caux"),
+    ("bla bla bl 28 r des moulins",
+     "28 r des moulins"),
     ("Non matching pattern",
      "Non matching pattern"),
 ])
@@ -130,6 +173,18 @@ def test_extract_address(input, expected):
 def test_glue_ordinal(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
     assert list(glue_ordinal(tokens)) == expected
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['d', '412'], ['d412']),
+    (['rd', '30'], ['d30']),
+    (['d', '30', 'a', '4'], ['d30', 'a4']),
+    (['route', 'd', '30', 'a', '4','b'], ['route', 'd30', 'a4', 'b']),
+    (['route', '30', 'a'], ['route', '30', 'a']),
+])
+def test_glue_refs(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_refs(tokens)) == expected
 
 
 @pytest.mark.parametrize("inputs,expected", [
@@ -331,3 +386,34 @@ def test_make_municipality_labels(config):
         '59000 Lille',
         'Lille 59000',
     ]
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['mont', 'griffon'], ['mont', 'montgriffon', 'griffon']),
+    (['champ', 'vallon'], ['champ', 'champvallon', 'vallon']),
+    (['val', 'suzon'], ['val', 'valsuzon', 'suzon']),
+    (['l', 'a', 'peu', 'pres'], ['l', 'a', 'peu', 'pres']),
+    (['l', 'un', 'des'], ['l', 'un', 'des']),
+])
+def test_glue_ordinal(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_words(tokens)) == expected
+
+
+@pytest.mark.parametrize("inputs,expected", [
+    (['allee', 'a', 'b', 'c', 'toto'],
+     ['allee', 'abc', 'toto']),
+    (['allee', 'a', 'b', 'c', 'toto', 'd', 'e', 'f'],
+     ['allee', 'abc', 'toto', 'def']),
+    (['allee', 'a', '2', 'c', 'toto'],
+     ['allee', 'a', '2', 'c', 'toto']),
+    (['allee', 'a', 'b', 'c'],
+     ['allee', 'abc']),
+    (['allee', 'a', 'b', 'c', 'd'],
+     ['allee', 'abcd']),
+    (['allee', 'a', 'b', 'c', 'd', 'e'],
+     ['allee', 'abcde']),
+])
+def test_glue_initials(inputs, expected):
+    tokens = [Token(input_) for input_ in inputs]
+    assert list(glue_initials(tokens)) == expected
