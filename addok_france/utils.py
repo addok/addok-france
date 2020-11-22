@@ -169,6 +169,25 @@ def glue_initials(tokens):
             yield token
 
 
+GLUE_REFS = re.compile(r'^(a|n|rn|d|rd|m|rm)[0-9]+$', flags=re.IGNORECASE)
+
+def glue_refs(tokens):
+    ref = None
+    for _, token, next_ in neighborhood(tokens):
+        print(ref, token, next_)
+        if next_ and GLUE_REFS.match(token+next_):
+            ref = token+next_
+        elif next_ and ref and GLUE_REFS.match(ref+next_):
+            ref = ref+next_
+        elif ref:
+            yield token.update(re.sub(r'^r(n|d)', r'\1', ref))
+            ref  = None
+        elif GLUE_REFS.match(token):
+            yield token.update(re.sub(r'^r(n|d)', r'\1', token))
+        else:
+            yield token
+
+
 def remove_leading_zeros(s):
     """0003 => 3."""
     # Limit digits from 1 to 3 in order to avoid processing postcodes.

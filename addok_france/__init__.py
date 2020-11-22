@@ -19,3 +19,4 @@ glue_initials = utils.glue_initials
 flag_housenumber = utils.flag_housenumber
 make_labels = utils.make_labels
 remove_leading_zeros = yielder(utils.remove_leading_zeros)
+glue_refs = utils.glue_refs
