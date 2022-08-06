@@ -98,7 +98,13 @@ CLEAN_PATTERNS = (
     (" {2,}", " "),
     ("[ -]s/[ -]", " sur "),
     ("[ -]s/s[ -]", " sous "),
-    ("^lieux?[ -]?dits?\\b(?=.)", ""),
+    ("^lieux?[ -]?dits?\\b(?=.)", ""), # BAN 07/2022 : 68056
+    ("^ham(eau)?\\b(?=.)", ""), # BAN 07/2022 : 7449
+    ("^quartier\\b(?=.)", ""), # BAN 07/2022 : 4006
+    ("^ferme\\b(?=.)", ""), # BAN 07/2022 : 2969
+    ("^domaine\\b(?=.)", ""), # BAN 07/2022 : 2409
+    ("^village\\b(?=.)", ""), # BAN 07/2022 : 1947
+    ("^chemin rural(( n°?)? ?[0-9]+)?( dit)?\\b(?=.)", "chemin "), # BAN 07/2022 : 2060
 )
 CLEAN_COMPILED = list(
     (re.compile(pattern, flags=re.IGNORECASE), replacement)
