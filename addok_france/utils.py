@@ -126,12 +126,16 @@ def neighborhood(iterable, first=None, last=None):
     """
     iterator = iter(iterable)
     previous = first
-    current = next(iterator)  # Throws StopIteration if empty.
-    for next_ in iterator:
-        yield (previous, current, next_)
-        previous = current
-        current = next_
-    yield (previous, current, last)
+    try:
+        current = next(iterator)  # Throws StopIteration if empty.
+    except StopIteration:
+        pass
+    else:
+        for next_ in iterator:
+            yield (previous, current, next_)
+            previous = current
+            current = next_
+        yield (previous, current, last)
 
 
 def glue_ordinal(tokens):

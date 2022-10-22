@@ -65,6 +65,7 @@ from addok_france.utils import (clean_query, extract_address, flag_housenumber,
      "20 rue saint germain 89110 Poilly-sur-tholon"),
     ("20 rue saint germain CIDEX N°304 89110 Poilly-sur-tholon",
      "20 rue saint germain 89110 Poilly-sur-tholon"),
+    ("bp 18", ""),
 ])
 def test_clean_query(input, expected):
     assert clean_query(input) == expected
@@ -161,12 +162,14 @@ def test_glue_ordinal(inputs, expected):
     (['place', 'des', 'terreaux'], False),
     (['rue', 'du', 'bis'], False),
     (['9', 'grand', 'rue'], True),
+    ([], False),  # Case of an empty string after clean query. Should not fail.
 ])
 def test_flag_housenumber(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
     tokens = list(flag_housenumber(tokens))
     assert tokens == inputs
-    assert (tokens[0].kind == 'housenumber') == expected
+    if inputs:
+        assert (tokens[0].kind == 'housenumber') == expected
 
 
 @pytest.mark.parametrize("input,expected", [
