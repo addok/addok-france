@@ -23,6 +23,7 @@ setup(
     version=".".join(map(str, VERSION)),
     description="Add France specific string processors.",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/etalab/addok-france',
     author='Yohan Boniface',
     author_email='yohan.boniface@data.gouv.fr',
