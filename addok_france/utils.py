@@ -34,7 +34,7 @@ TYPES = [
     "promenade",
     "hameau",
     "faubourg",
-    "[îiÎI]lot",
+    "[îi]lot",
     "berges?",
     "via",
     "cit[ée]",
