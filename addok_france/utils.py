@@ -30,7 +30,7 @@ TYPES = [
     "mont",
     "r[ée]sidence",
     "parc",
-    "cours?",
+    "c(ou)?rs?",
     "promenade",
     "hameau",
     "faubourg",
