@@ -183,6 +183,16 @@ def fold_ordinal(s):
     return s
 
 
+GLUE_WORDS = ["mont", "val", "le", "la", "l", "champ"]
+
+def glue_words(tokens):
+    """ glue 'MONT GRIFFON' into 'MONTGRIFFON' """
+    for _, token, next_ in neighborhood(tokens):
+        yield token
+        if token in GLUE_WORDS and next_ and next_.isalpha() and len(next_)>2:
+            yield token.update(token+next_)
+
+
 def remove_leading_zeros(s):
     """0003 => 3."""
     # Limit digits from 1 to 3 in order to avoid processing postcodes.
