@@ -139,7 +139,7 @@ def neighborhood(iterable, first=None, last=None):
 def glue_ordinal(tokens):
     previous = None
     for _, token, next_ in neighborhood(tokens):
-        if next_ and token.isdigit():
+        if next_ and token.isdigit() and len(token)<5:
             previous = token
             continue
         if previous is not None:
