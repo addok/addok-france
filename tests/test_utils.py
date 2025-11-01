@@ -162,6 +162,30 @@ def test_glue_ordinal(inputs, expected):
     (['place', 'des', 'terreaux'], False),
     (['rue', 'du', 'bis'], False),
     (['9', 'grand', 'rue'], True),
+    (['15', 'bld', 'hugo'], True),
+    (['22', 'blvd', 'republique'], True),
+    (['8', 'ch', 'oliviers'], True),
+    (['12', 'chem', 'jean'], True),
+    (['5', 'pass', 'montmartre'], True),
+    (['3', 'dom', 'foret'], True),
+    (['18', 'res', 'mimosas'], True),
+    (['25', 'prom', 'anglais'], True),
+    (['7', 'ham', 'vallee'], True),
+    (['10', 'fbg', 'martin'], True),
+    (['14', 'carr', 'etoile'], True),
+    (['9', 'trav', 'champs'], True),
+    (['20', 'espl', 'gaulle'], True),
+    (['15', 'jard', 'plantes'], True),
+    (['3', 'jetée', 'port'], True),
+    (['3', 'jetee', 'port'], True),
+    (['3', 'jtée', 'port'], True),
+    (['3', 'jtee', 'port'], True),
+    (['7', 'plle', 'parc'], True),
+    (['12', 'prvs', 'dame'], True),
+    (['18', 'qrt', 'latin'], True),
+    (['25', 'rlle', 'chat'], True),
+    (['8', 'tsse', 'soleil'], True),
+    (['10', 'vlla', 'roses'], True),
     ([], False),  # Case of an empty string after clean query. Should not fail.
 ])
 def test_flag_housenumber(inputs, expected):
@@ -170,6 +194,85 @@ def test_flag_housenumber(inputs, expected):
     assert tokens == inputs
     if inputs:
         assert (tokens[0].kind == 'housenumber') == expected
+
+
+@pytest.mark.parametrize("street_type,should_match", [
+    # Boulevard abbreviations
+    ('bld', True),
+    ('blvd', True),
+    ('bvd', True),
+    ('boulevard', True),
+    # Chemin abbreviations
+    ('ch', True),
+    ('chem', True),
+    ('chemin', True),
+    # Passage
+    ('pass', True),
+    ('passage', True),
+    # Domaine
+    ('dom', True),
+    ('domaine', True),
+    # Residence
+    ('res', True),
+    ('rés', True),
+    ('residence', True),
+    # Promenade
+    ('prom', True),
+    ('promenade', True),
+    # Hameau
+    ('ham', True),
+    ('hameau', True),
+    # Faubourg
+    ('fbg', True),
+    ('faubourg', True),
+    # Carrefour
+    ('carr', True),
+    ('carrefour', True),
+    # Traverse
+    ('trav', True),
+    ('traverse', True),
+    # Esplanade
+    ('espl', True),
+    ('esp', True),
+    ('esplanade', True),
+    # Jardin
+    ('jard', True),
+    ('jardin', True),
+    # Jetée - all variants
+    ('jetée', True),
+    ('jetee', True),
+    ('jtée', True),
+    ('jtee', True),
+    # Passerelle
+    ('plle', True),
+    ('passerelle', True),
+    # Parvis
+    ('prvs', True),
+    ('parvis', True),
+    # Quartier
+    ('qrt', True),
+    ('quartier', True),
+    # Ruelle
+    ('rlle', True),
+    ('ruelle', True),
+    # Terrasse
+    ('tsse', True),
+    ('terrasse', True),
+    # Villa
+    ('vlla', True),
+    ('villa', True),
+    # Negative cases - should NOT match
+    ('xyz', False),
+    ('abc', False),
+    ('test', False),
+])
+def test_street_type_patterns(street_type, should_match):
+    """Test that street type patterns match expected abbreviations."""
+    from addok_france.utils import TYPES_PATTERN
+    result = bool(TYPES_PATTERN.match(street_type))
+    assert result == should_match, \
+        f"Pattern should {'match' if should_match else 'not match'} '{street_type}'"
+
 
 
 @pytest.mark.parametrize("input,expected", [
