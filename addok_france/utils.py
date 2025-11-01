@@ -196,12 +196,19 @@ def make_labels(helper, result):
     For addresses in merged municipalities (communes nouvelles), the city field
     can be a list containing all valid city names (historical and new).
     This allows addresses to be found using any of their valid city names.
+    
+    Labels are generated in priority order using insert(0), where the last-added
+    label appears first. This ordering is important for result scoring in addok.
     """
     if result.labels:
         return
     housenumber = getattr(result, "housenumber", None)
 
     def add(labels, label):
+        """
+        Add a label to the list, with insert(0) for priority ordering.
+        If housenumber is present, also adds the housenumber variant.
+        """
         labels.insert(0, label)
         if housenumber:
             label = "{} {}".format(housenumber, label)
