@@ -190,33 +190,57 @@ def remove_leading_zeros(s):
 
 
 def make_labels(helper, result):
+    """
+    Generate search labels for a result.
+
+    For addresses in merged municipalities (communes nouvelles), the city field
+    can be a list containing all valid city names (historical and new).
+    This allows addresses to be found using any of their valid city names.
+    
+    Labels are generated in priority order using insert(0), where the last-added
+    label appears first. This ordering is important for result scoring in addok.
+    """
     if result.labels:
         return
     housenumber = getattr(result, "housenumber", None)
 
     def add(labels, label):
+        """
+        Add a label to the list, with insert(0) for priority ordering.
+        If housenumber is present, also adds the housenumber variant.
+        """
         labels.insert(0, label)
         if housenumber:
             label = "{} {}".format(housenumber, label)
             labels.insert(0, label)
 
-    city = result.city
+    # Support both single city (string) and merged municipalities (list)
+    raw_city = result._rawattr("city")
+    # Normalize to list: if list, use as-is; if empty list, treat as [None]; if scalar, wrap in list
+    if isinstance(raw_city, list):
+        cities = raw_city if raw_city else [None]
+    else:
+        cities = [raw_city]
+
     postcode = result.postcode
     names = result._rawattr("name")
     if not isinstance(names, (list, tuple)):
         names = [names]
+
+    # Generate labels for each name x city combination
     for name in names:
-        labels = []
-        label = name
-        if postcode and result.type == "municipality":
-            add(labels, "{} {}".format(label, postcode))
-            add(labels, "{} {}".format(postcode, label))
-        add(labels, label)
-        if city and city != label:
-            add(labels, "{} {}".format(label, city))
-            if postcode:
-                label = "{} {}".format(label, postcode)
-                add(labels, label)
-                label = "{} {}".format(label, city)
-                add(labels, label)
-        result.labels.extend(labels)
+        for city in cities:
+            labels = []
+            label = name
+            if postcode and result.type == "municipality":
+                add(labels, "{} {}".format(label, postcode))
+                add(labels, "{} {}".format(postcode, label))
+            add(labels, label)
+            if city and city != label:
+                add(labels, "{} {}".format(label, city))
+                if postcode:
+                    label = "{} {}".format(label, postcode)
+                    add(labels, label)
+                    label = "{} {}".format(label, city)
+                    add(labels, label)
+            result.labels.extend(labels)

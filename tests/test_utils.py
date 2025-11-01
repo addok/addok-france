@@ -325,6 +325,116 @@ def test_make_labels(config):
     ]
 
 
+def test_make_labels_merged_cities(config):
+    """Test labels generation for addresses in merged municipalities."""
+    doc = {
+        "_id": "53543a313139353538390000",
+        "id": "53543a313139353538390000",
+        "type": "street",
+        "postcode": "49120",
+        "lat": "47.1469",
+        "lon": "-0.75745",
+        "name": "RUE PIERRE LEPOUREAU",
+        "city": [
+            "ST GEORGES DES GARDES (CHEMILLE EN ANJOU)",
+            "ST GEORGES DES GARDES",
+            "CHEMILLE EN ANJOU",
+        ],
+        "housenumbers": {
+            "2 BIS": {
+                "lat": "47.1504",
+                "lon": "-0.757414"
+            }
+        }
+    }
+
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|53543a313139353538390000'))
+    result.housenumber = '2 bis'
+    make_labels(None, result)
+
+    # Should generate labels for each city variant
+    # Labels are generated in priority order (via insert(0))
+    assert '2 bis RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES (CHEMILLE EN ANJOU)' in result.labels
+    assert 'RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES (CHEMILLE EN ANJOU)' in result.labels
+    assert '2 bis RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES' in result.labels
+    assert 'RUE PIERRE LEPOUREAU 49120 ST GEORGES DES GARDES' in result.labels
+    assert '2 bis RUE PIERRE LEPOUREAU 49120 CHEMILLE EN ANJOU' in result.labels
+    assert 'RUE PIERRE LEPOUREAU 49120 CHEMILLE EN ANJOU' in result.labels
+    # Verify all 3 city variants are present
+    assert any('ST GEORGES DES GARDES (CHEMILLE EN ANJOU)' in label for label in result.labels)
+    assert any('ST GEORGES DES GARDES' in label and 'CHEMILLE EN ANJOU' not in label for label in result.labels)
+    assert any('CHEMILLE EN ANJOU' in label and 'ST GEORGES DES GARDES' not in label for label in result.labels)
+
+
+def test_make_labels_empty_city_list(config):
+    """Test that empty city list generates base labels without city."""
+    doc = {
+        "_id": "53543a313139353538390001",
+        "id": "53543a313139353538390001",
+        "type": "street",
+        "postcode": "75010",
+        "lat": "48.8566",
+        "lon": "2.3522",
+        "name": "RUE DE TEST",
+        "city": [],  # Empty list should be treated as None
+    }
+
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|53543a313139353538390001'))
+    make_labels(None, result)
+
+    # Should generate base labels without city
+    assert 'RUE DE TEST 75010' in result.labels or 'RUE DE TEST' in result.labels
+    # Should not be empty
+    assert len(result.labels) > 0
+
+
+def test_make_labels_city_none(config):
+    """Test that None city value generates base labels."""
+    doc = {
+        "_id": "53543a313139353538390002",
+        "id": "53543a313139353538390002",
+        "type": "street",
+        "postcode": "75011",
+        "lat": "48.8566",
+        "lon": "2.3522",
+        "name": "AVENUE EXEMPLE",
+        "city": None,
+    }
+
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|53543a313139353538390002'))
+    make_labels(None, result)
+
+    # Should generate base labels without city
+    assert any('AVENUE EXEMPLE' in label for label in result.labels)
+    assert len(result.labels) > 0
+
+
+def test_make_labels_single_city_string(config):
+    """Test that single city as string still works (backward compatibility)."""
+    doc = {
+        "_id": "53543a313139353538390003",
+        "id": "53543a313139353538390003",
+        "type": "street",
+        "postcode": "69001",
+        "lat": "45.7640",
+        "lon": "4.8357",
+        "name": "RUE DE LYON",
+        "city": "LYON",
+    }
+
+    process_documents(json.dumps(doc))
+    result = Result(get_document('d|53543a313139353538390003'))
+    make_labels(None, result)
+
+    # Should generate labels with city
+    assert any('LYON' in label for label in result.labels)
+    assert any('RUE DE LYON' in label for label in result.labels)
+    assert len(result.labels) > 0
+
+
 def test_make_municipality_labels(config):
     doc = {
         'id': 'xxxx',
