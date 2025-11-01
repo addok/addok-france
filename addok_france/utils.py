@@ -216,7 +216,11 @@ def make_labels(helper, result):
 
     # Support both single city (string) and merged municipalities (list)
     raw_city = result._rawattr("city")
-    cities = raw_city if isinstance(raw_city, list) else [raw_city]
+    # Normalize to list: if list, use as-is; if empty list, treat as [None]; if scalar, wrap in list
+    if isinstance(raw_city, list):
+        cities = raw_city if raw_city else [None]
+    else:
+        cities = [raw_city]
 
     postcode = result.postcode
     names = result._rawattr("name")
