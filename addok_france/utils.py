@@ -88,7 +88,7 @@ EXTRACT_ADDRESS_PATTERN = re.compile(
     + ORDINAL_REGEX
     + "))?,? +("
     + TYPES_REGEX
-    + ") .*(\d{5})?).*",  # noqa
+    + r") .*(\d{5})?).*",  # noqa
     flags=re.IGNORECASE,
 )
 
@@ -207,7 +207,7 @@ def fold_ordinal(s):
 def remove_leading_zeros(s):
     """0003 => 3."""
     # Limit digits from 1 to 3 in order to avoid processing postcodes.
-    return re.sub(r"\b0+(\d{1,3})\b", "\g<1>", s, flags=re.IGNORECASE)
+    return re.sub(r"\b0+(\d{1,3})\b", r"\g<1>", s, flags=re.IGNORECASE)
 
 
 def make_labels(helper, result):
