@@ -92,6 +92,14 @@ EXTRACT_ADDRESS_PATTERN = re.compile(
     flags=re.IGNORECASE,
 )
 
+# Building, staircase, flat… words: a number right after them is not the
+# housenumber ("Escalier 4 porte 12 85 rue …").
+COMPLEMENT_PATTERN = re.compile(
+    r"\b(app?t|appartement|b[aâ]t(iment)?|bt|entr[ée]e|esc(alier)?|[ée]tage|"
+    r"imm(euble)?|lgt|log(ement)?|porte)\.?\s*(n[°o]\.?\s*)?$",
+    flags=re.IGNORECASE,
+)
+
 # Match "bis", "ter", "b", etc.
 ORDINAL_PATTERN = re.compile(r"\b(" + ORDINAL_REGEX + r")\b", flags=re.IGNORECASE)
 
@@ -133,8 +141,15 @@ def clean_query(q):
 
 
 def extract_address(q):
-    m = EXTRACT_ADDRESS_PATTERN.search(q)
-    return m.group() if m else q
+    start = 0
+    while True:
+        m = EXTRACT_ADDRESS_PATTERN.search(q, start)
+        if not m:
+            return q
+        # "Bat 2 Residence …": the number belongs to the building, try further.
+        if not COMPLEMENT_PATTERN.search(q[:m.start()]):
+            return m.group()
+        start = m.start() + 1
 
 
 def neighborhood(iterable, first=None, last=None):

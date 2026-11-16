@@ -115,6 +115,21 @@ def test_clean_query(input, expected):
      "26 AV ANDRE ROUSSIN 13016 MARSEILLE 16"),
     ("Non matching pattern",
      "Non matching pattern"),
+    # Building, staircase or flat numbers before the address are skipped.
+    ("Escalier 4 porte 12 85 rue reignier 33100 bordeaux",
+     "85 rue reignier 33100 bordeaux"),
+    ("Bat 2 Residence Les Jardins 85 rue reignier bordeaux",
+     "85 rue reignier bordeaux"),
+    ("Appt 3 Résidence les Pins 14 allée des Bordelais Bordeaux",
+     "14 allée des Bordelais Bordeaux"),
+    ("Bât 4 Esc 2 Porte 7 22 avenue Jean Jaurès 69007 Lyon",
+     "22 avenue Jean Jaurès 69007 Lyon"),
+    ("Bâtiment B 12 rue des Lilas 59000 Lille",
+     "12 rue des Lilas 59000 Lille"),
+    ("12 porte de Vincennes 75012 Paris",
+     "12 porte de Vincennes 75012 Paris"),
+    ("Bat 2 Residence Les Jardins",
+     "Bat 2 Residence Les Jardins"),
 ])
 def test_extract_address(input, expected):
     assert extract_address(input) == expected
