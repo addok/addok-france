@@ -164,9 +164,12 @@ def glue_ordinal(tokens):
             previous = token
             continue
         if previous is not None:
-            # Matches "bis" either followed by a type or nothing.
+            # Ordinal words ("bis", "ter"…) are glued whatever follows, as
+            # the street name may have no type ("12 bis la croix").
+            # Single letters are ambiguous ("241 r de" means "rue"), so
+            # they must be followed by a type or nothing.
             if ORDINAL_PATTERN.match(token) and (
-                not next_ or TYPES_PATTERN.match(next_)
+                len(token) > 1 or not next_ or TYPES_PATTERN.match(next_)
             ):
                 raw = "{} {}".format(previous, token)
                 # Space removed to maximize chances to get a hit.

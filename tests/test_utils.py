@@ -137,6 +137,15 @@ def test_extract_address(input, expected):
     (['241', 'r', 'rue'], ['241r', 'rue']),
     (['place', 'des', 'terreaux'], ['place', 'des', 'terreaux']),
     (['rue', 'du', 'bis'], ['rue', 'du', 'bis']),
+    # Ordinal words are glued whatever follows (lieux-dits, untyped names…).
+    (['8', 'bis', 'rampe', 'saint', 'martin'], ['8bis', 'rampe', 'saint', 'martin']),
+    (['12', 'bis', 'la', 'croix'], ['12bis', 'la', 'croix']),
+    (['1', 'ter', 'lieu', 'dit', 'goujon'], ['1ter', 'lieu', 'dit', 'goujon']),
+    (['62', 'bis', 'zone', 'industrielle'], ['62bis', 'zone', 'industrielle']),
+    (['4', 'quater', 'hent', 'meur'], ['4quater', 'hent', 'meur']),
+    # Single letters still need a street type (or nothing) after them.
+    (['12', 'b', 'la', 'croix'], ['12', 'b', 'la', 'croix']),
+    (['120', 'r', 'renard'], ['120', 'r', 'renard']),
 ])
 def test_glue_ordinal(inputs, expected):
     tokens = [Token(input_) for input_ in inputs]
