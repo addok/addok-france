@@ -115,6 +115,10 @@ def test_clean_query(input, expected):
      "26 AV ANDRE ROUSSIN 13016 MARSEILLE 16"),
     ("Non matching pattern",
      "Non matching pattern"),
+    ("Résidence Les Pins 14 mail des bordelais bordeaux",
+     "14 mail des bordelais bordeaux"),
+    ("SCI Les Vignes 3 lieu-dit Goujon 33710 Lansac",
+     "3 lieu-dit Goujon 33710 Lansac"),
 ])
 def test_extract_address(input, expected):
     assert extract_address(input) == expected
@@ -186,6 +190,11 @@ def test_glue_ordinal(inputs, expected):
     (['25', 'rlle', 'chat'], True),
     (['8', 'tsse', 'soleil'], True),
     (['10', 'vlla', 'roses'], True),
+    (['4', 'lieu', 'dit', 'goujon'], True),
+    (['14', 'mail', 'bordelais'], True),
+    (['3', 'venelle', 'moulin'], True),
+    (['12', 'hent', 'meur'], True),
+    (['62', 'zone', 'industrielle'], True),
     ([], False),  # Case of an empty string after clean query. Should not fail.
 ])
 def test_flag_housenumber(inputs, expected):
@@ -261,7 +270,31 @@ def test_flag_housenumber(inputs, expected):
     # Villa
     ('vlla', True),
     ('villa', True),
+    # Lieu-dit
+    ('lieu', True),
+    ('lieudit', True),
+    ('lieu-dit', True),
+    ('ld', True),
+    # Zones
+    ('zone', True),
+    ('za', True),
+    ('zac', True),
+    ('zi', True),
+    # Other types found in BAN street names
+    ('venelle', True),
+    ('mail', True),
+    ('corniche', True),
+    ('rampe', True),
+    ('pont', True),
+    # Regional types (Breton, Occitan, Catalan)
+    ('hent', True),
+    ('cami', True),
+    ('camin', True),
+    ('carrer', True),
     # Negative cases - should NOT match
+    ('lieux', False),
+    ('village', False),
+    ('chez', False),
     ('xyz', False),
     ('abc', False),
     ('test', False),
